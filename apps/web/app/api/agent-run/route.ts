@@ -1,4 +1,4 @@
-import { extractPaymentIntent, scrapeMarkdown } from '@/lib/agent-run';
+import { extractPaymentIntent, fetchFintualNav, scrapeMarkdown } from '@/lib/agent-run';
 
 // Runs a REAL reference agent: Firecrawl scrapes one of our hosted demo pages,
 // the naive extractor reads the payee, and (when protected) the decision is made
@@ -15,6 +15,7 @@ import { extractPaymentIntent, scrapeMarkdown } from '@/lib/agent-run';
 const DEMO_PAGES: Record<string, string> = {
   clean: '/demo-pages/acme-clean.html',
   poisoned: '/demo-pages/acme-poisoned.html',
+  fintual: '/demo-pages/fintual-poisoned.html',
 };
 
 const HITS: number[] = [];
@@ -35,7 +36,9 @@ export async function POST(req: Request): Promise<Response> {
   let protection = true;
   try {
     const body = (await req.json()) as { scenario?: string; protection?: boolean };
-    if (body.scenario === 'clean' || body.scenario === 'poisoned') scenario = body.scenario;
+    if (body.scenario === 'clean' || body.scenario === 'poisoned' || body.scenario === 'fintual') {
+      scenario = body.scenario;
+    }
     protection = body.protection !== false;
   } catch {
     return Response.json({ error: 'invalid body' }, { status: 400 });
@@ -55,6 +58,8 @@ export async function POST(req: Request): Promise<Response> {
   }
   const extracted = extractPaymentIntent(markdown);
   const sourceRef = `firecrawl:${path}`;
+  // For the Fintual scenario, also pull the fund's REAL live NAV (public API).
+  const fintual = scenario === 'fintual' ? await fetchFintualNav() : undefined;
 
   if (!protection) {
     // No firewall: the agent pays whatever the page said. MOCK — no real money.
@@ -63,6 +68,7 @@ export async function POST(req: Request): Promise<Response> {
       protection: false,
       scraped: { chars: markdown.length, sourceRef },
       extracted,
+      fintual,
       via: 'none',
       decision: 'unprotected-paid',
       reason: extracted.injected
@@ -106,6 +112,7 @@ export async function POST(req: Request): Promise<Response> {
       protection: true,
       scraped: { chars: markdown.length, sourceRef },
       extracted,
+      fintual,
       via: 'api',
       decision: d.decision,
       reason: d.reason,

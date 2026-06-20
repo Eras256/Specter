@@ -3,6 +3,47 @@
 // key is read here and must never reach the browser.
 
 const FIRECRAWL_SCRAPE = 'https://api.firecrawl.dev/v1/scrape';
+const FINTUAL_API = 'https://fintual.cl/api';
+
+export interface FintualNav {
+  fund: string;
+  nav: number;
+  units: number;
+  value: number; // CLP
+  date: string;
+}
+
+/** Real, live NAV of Fintual's "Risky Norris" fund via their public API (no auth). */
+export async function fetchFintualNav(): Promise<FintualNav> {
+  const units = 124.86; // demo holdings (we don't have the user's real account)
+  try {
+    const res = await fetch(`${FINTUAL_API}/real_assets?conceptual_asset_id=36`, {
+      signal: AbortSignal.timeout(8000),
+    });
+    if (res.ok) {
+      const json = (await res.json()) as {
+        data?: Array<{
+          attributes?: { name?: string; last_day?: { net_asset_value?: number; date?: string } };
+        }>;
+      };
+      const a = json.data?.[0]?.attributes;
+      const nav = a?.last_day?.net_asset_value;
+      if (nav) {
+        return {
+          fund: a?.name ?? 'Risky Norris',
+          nav,
+          units,
+          value: Math.round(nav * units),
+          date: a?.last_day?.date ?? '',
+        };
+      }
+    }
+  } catch {
+    /* fall through to offline-safe value */
+  }
+  const nav = 4037.04;
+  return { fund: 'Risky Norris', nav, units, value: Math.round(nav * units), date: '' };
+}
 
 /** Real Firecrawl scrape → markdown. Throws if the key is missing or it fails. */
 export async function scrapeMarkdown(url: string): Promise<string> {

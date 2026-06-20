@@ -118,14 +118,14 @@ export default function DemoPage() {
         </div>
       </Section>
 
-      <Section className="!pt-2">
+      <Section className="!pt-2 !pb-10">
         <SectionHead eyebrow={t.fintualEyebrow} title={t.fintualTitle} sub={t.fintualSub} />
-        <div className="mt-6 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-          <CrashTest variant="fintual" />
-          <div className="panel p-5">
-            <Pill tone="specter">{t.fintualNotePill}</Pill>
-            <p className="mt-3 text-sm leading-relaxed text-ink-dim">{t.fintualNote}</p>
-          </div>
+        <div className="mt-6">
+          <LiveAgents variant="fintual" />
+        </div>
+        <div className="panel mt-4 p-5">
+          <Pill tone="specter">{t.fintualNotePill}</Pill>
+          <p className="mt-3 text-sm leading-relaxed text-ink-dim">{t.fintualNote}</p>
         </div>
       </Section>
     </>
