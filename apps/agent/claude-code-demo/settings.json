@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "_comment": "Example Claude Code config: register Specter as a PreToolUse HTTP hook so the SAME engine that governs the custom agent also governs a code agent. Point url at your deployed Fly API. The hook returns HTTP 200 with permissionDecision in the body (the gotcha) — that is what actually blocks.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "http",
+            "url": "https://specter-decision-api.fly.dev/hooks/claude-code",
+            "headers": { "x-api-key": "$SPECTER_API_KEY" },
+            "allowedEnvVars": ["SPECTER_API_KEY"],
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

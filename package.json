@@ -1,0 +1,39 @@
+{
+  "name": "specter",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Specter — the control & observability firewall for AI-agent payments.",
+  "type": "module",
+  "packageManager": "pnpm@10.18.3",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "pnpm -r --filter \"./packages/*\" build && pnpm -r --filter \"./apps/*\" build",
+    "dev": "pnpm --parallel --filter \"@specter/web\" --filter \"@specter/api\" dev",
+    "dev:all": "pnpm --parallel -r dev",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:security": "vitest run --project security",
+    "e2e": "pnpm --filter @specter/e2e test",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "typecheck": "pnpm -r typecheck",
+    "seed": "pnpm --filter @specter/db seed",
+    "demo": "pnpm --filter @specter/agent demo"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.2.0",
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.5"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "@biomejs/biome"
+    ]
+  }
+}

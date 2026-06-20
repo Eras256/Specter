@@ -1,0 +1,59 @@
+# deps
+node_modules/
+.pnpm-store/
+
+# build output
+dist/
+build/
+.next/
+out/
+.turbo/
+.vercel/
+.cache/
+*.tsbuildinfo
+.eslintcache
+
+# env / secrets — ignore every .env variant; the only committed one is the template
+.env
+.env.*
+!.env.example
+
+# credentials / keys (defensive — never commit these)
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+id_rsa
+id_rsa.*
+id_ed25519
+id_ed25519.*
+secrets.json
+credentials.json
+service-account*.json
+*.tgz
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# test
+coverage/
+playwright-report/
+test-results/
+
+# os / editor
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# claude code personal overrides (local permissions, never shared)
+.claude/settings.local.json
+.claude/*.local.json
+
+# fly
+.fly/
+fly.toml.bak

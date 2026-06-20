@@ -1,0 +1,42 @@
+# Specter decision API — always-warm container on Fly.io.
+# The gate is latency-critical (<500 ms p99); cold starts break the live demo,
+# so we keep one machine running at all times.
+#
+#   fly launch --no-deploy        # first time: create the app
+#   fly secrets set ANTHROPIC_API_KEY=... SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=...
+#   fly deploy --dockerfile apps/api/Dockerfile .
+
+app = "specter-decision-api"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  SPECTER_PORT = "8080"
+  NODE_ENV = "production"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  # Always-warm: never scale to zero. This is the non-negotiable demo guarantee.
+  min_machines_running = 1
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 200
+    hard_limit = 250
+
+  [[http_service.checks]]
+    interval = "15s"
+    timeout = "2s"
+    grace_period = "5s"
+    method = "GET"
+    path = "/health"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
+  cpus = 1

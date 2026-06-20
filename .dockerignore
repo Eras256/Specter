@@ -1,0 +1,30 @@
+# Keep the Fly build context small and let the image install its own deps.
+**/node_modules
+**/.next
+**/dist
+**/build
+**/.turbo
+**/coverage
+**/*.tsbuildinfo
+
+.git
+.github
+.vscode
+.idea
+
+# secrets never enter the image (set via `fly secrets set`)
+.env
+.env.local
+.env.*.local
+
+# other apps not needed by the API image
+apps/web
+apps/agent
+packages/sdk
+
+# misc
+*.log
+.DS_Store
+Thumbs.db
+README.md
+**/*.test.ts

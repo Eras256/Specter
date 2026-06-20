@@ -1,0 +1,33 @@
+{
+  "name": "@specter/agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "scripts": {
+    "demo": "tsx src/cli.ts",
+    "scenario:legit": "tsx src/cli.ts --scenario=legit",
+    "scenario:injected": "tsx src/cli.ts --scenario=injected",
+    "scenario:unprotected": "tsx src/cli.ts --scenario=injected --protection=off",
+    "dev": "tsx src/cli.ts --scenario=all",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@specter/core": "workspace:*",
+    "@specter/sdk": "workspace:*",
+    "@ai-sdk/anthropic": "^3.0.0",
+    "ai": "^6.0.0",
+    "zod": "^3.24.1"
+  },
+  "optionalDependencies": {
+    "@mendable/firecrawl-js": "^4.0.0",
+    "stripe": "^22.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.5"
+  }
+}
