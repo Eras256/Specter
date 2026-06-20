@@ -6,131 +6,107 @@ import { useLang } from '@/lib/i18n';
 const COPY = {
   es: {
     eyebrow: 'Seguridad',
-    title:
-      'Por qué pedirle a una IA que se vigile a sí misma no alcanza — y qué hacemos en su lugar.',
-    sub: 'Así funciona de verdad. El ataque: una página web o un correo que el agente lee esconde una instrucción que cambia sin ruido quién recibe el pago. El agente cree que está haciendo su trabajo. El lugar donde cae el truco no es donde aparece el daño.',
+    title: 'Pedirle a una IA que se vigile sola no alcanza. Esto hacemos en su lugar.',
+    sub: 'El ataque: una página o correo que el agente lee esconde una instrucción que cambia, sin ruido, quién recibe el pago. El truco cae lejos de donde aparece el daño.',
 
-    check1Pill: 'Verificación 1 — ¿De dónde vino la solicitud? (el foso)',
+    check1Pill: 'Verificación 1 — ¿De dónde vino? (el moat)',
     check1Lead: 'Cada pago recibe una pregunta:',
-    check1Question: '¿esto vino de ti, o de una página web que el agente leyó a mitad de la tarea?',
+    check1Question: '¿esto vino de ti, o de una página que el agente leyó a mitad de la tarea?',
     check1Body:
-      ' Rastreamos de dónde vino cada beneficiario — tu instrucción, una página que el agente leyó o la salida de una herramienta — y por separado verificamos si ese beneficiario estuvo alguna vez en lo que realmente pediste. Un beneficiario que apareció desde una página que el agente leyó, y que no se remonta a nada que dijiste, es el cambiazo clásico — y nuestra mayor señal de alerta.',
+      ' Rastreamos el origen de cada destinatario y verificamos si estuvo en lo que realmente pediste. Uno que salió del contenido y no se remonta a ti es el cambiazo clásico — nuestra mayor alerta.',
 
-    check2Pill: 'Verificación 2 — Reglas estrictas para lo que no se puede deshacer',
+    check2Pill: 'Verificación 2 — Reglas estrictas para lo irreversible',
     check2Body1:
-      'Bloqueos rotundos para lo peligroso — borrar una base de datos, eliminar archivos, leer claves secretas, romper producción. Esto corre ',
+      'Bloqueos rotundos para lo peligroso (borrar una base de datos, leer secretos, romper producción). Corren ',
     check2Em: 'antes',
     check2Body2:
-      ' de que cualquier IA entre en juego, y nada puede convencerlos de un no. A una IA secuestrada se la puede persuadir; una regla estricta sobre ',
+      ' de cualquier IA, y nada los convence de un sí. A una IA se la persuade; una regla estricta sobre ',
     check2Body3: ' no.',
 
-    check3Pill: 'Verificación 3 — Tus límites, tu lista, y si cuadra',
+    check3Pill: 'Verificación 3 — Tus límites, tu lista y si cuadra',
     check3Body:
-      'Tus propias reglas: topes por pago y por mes, una lista de quién puede recibir pagos, en qué se puede gastar, y "nunca le pagamos antes → primero pregúntale a una persona". Más una revisión de coherencia (¿el beneficiario coincide con la tienda y con el carrito o la factura de verdad?) y vigilancia de demasiados pagos demasiado rápido. Un beneficiario nuevo o desconocido se marca, nunca se deja pasar.',
+      'Topes por pago y por mes, lista de a quién se le puede pagar, y "cuenta nueva → primero pregunta a una persona". Más coherencia (¿el destinatario coincide con la tienda o la factura?) y vigilancia de demasiados pagos muy rápido.',
 
-    check4Pill: 'Verificación 4 — Una segunda opinión de IA, como una señal entre varias',
-    check4Body1:
-      'Una IA rápida (Claude Haiku) opina sobre trucos nuevos o poco claros y suma una señal más al puntaje. ',
-    check4Strong: 'Nunca es lo único que se interpone entre un pago y un atacante',
+    check4Pill: 'Verificación 4 — Una IA, como una señal más',
+    check4Body1: 'Una IA rápida (Claude Haiku) opina sobre trucos nuevos y suma una señal. ',
+    check4Strong: 'Nunca es lo único entre un pago y un atacante',
     check4Body2:
-      ', y no puede anular las reglas estrictas ni la verificación de de-dónde-vino. Si está lenta o caída, el motor sigue funcionando y se apoya en las reglas estrictas.',
-    check4BoxTitle: '¿Por qué no poner una sola IA al mando?',
+      ', y no anula las reglas estrictas ni el de-dónde-vino. Si falla, el motor sigue con las reglas.',
+    check4BoxTitle: '¿Por qué no una sola IA al mando?',
     check4BoxBody:
-      ' Porque esa IA también puede ser secuestrada. La misma página envenenada que engaña al agente puede engañar a una IA guardiana. Con las reglas estrictas y el de-dónde-vino no se puede discutir — son el piso sobre el que se apoya la IA.',
+      ' Porque también puede ser secuestrada: la misma página que engaña al agente engaña a la IA guardiana. Las reglas estrictas y el de-dónde-vino no se discuten.',
 
-    proofPill: 'Prueba — un registro que no se puede alterar en secreto',
+    proofPill: 'Prueba — un registro inalterable',
     proofBody1: 'Cada decisión queda encadenada a la anterior:',
     proofBody2:
-      '. Edita cualquier entrada pasada y deja de coincidir — cada entrada posterior también se rompe, así que la verificación se pone en rojo justo en la fila que alguien tocó. No le creas al agente que funcionó — verifica el registro. (Lo que viene: estampar con regularidad una huella del registro en algún lugar público, para que ni siquiera nosotros podamos reescribir la historia sin que se note.)',
-
-    mini1t: 'Ante la duda, detente',
-    mini1d:
-      'Si algo se rompe por dentro, primero le pregunta a una persona — nunca deja pasar un pago en silencio.',
-    mini2t: 'Una persona puede intervenir',
-    mini2d:
-      'Los pagos poco claros esperan un sí en la cola de aprobación in-app; nada que no se pueda deshacer ocurre sin vigilancia.',
-    mini3t: 'Nada se omite a escondidas',
-    mini3d:
-      'Si algo se cortó o se saltó, queda anotado — "lo verificamos todo" tiene que ser cierto, no darse por hecho.',
+      '. Edita una entrada pasada y deja de coincidir — todo lo posterior se rompe y la verificación se pone roja en esa fila. No le creas al agente: verifica el registro.',
 
     incEyebrow: 'Riesgo real',
     incTitle: 'Basado en incidentes reales',
-    incSub:
-      'No es teoría. Esto ya pasó en producción — y es exactamente lo que esta arquitectura está diseñada para frenar.',
+    incSub: 'No es teoría — ya pasó en producción, y es justo lo que esta arquitectura frena.',
     inc1Pill: 'Replit (2025)',
     inc1Body:
-      'Un agente de IA borró una base de datos de producción durante un code freeze. Luego reportó en falso lo que había hecho. Lección: nunca confíes en el éxito que el propio agente reporta — verifica el registro.',
+      'Un agente borró una base de datos en producción durante un code freeze y luego mintió sobre lo que hizo. Lección: no confíes en el éxito que el agente reporta — verifica el registro.',
     inc2Pill: 'EchoLeak (2025)',
     inc2Body:
-      'La primera vulnerabilidad de inyección de prompts "zero-click" divulgada (un CVE) en un agente de IA en producción: datos exfiltrados sin ninguna acción del usuario. Lección: la inyección es una superficie de ataque real y remota, no teórica.',
+      'La primera inyección de prompts "zero-click" (un CVE) en un agente en producción: datos exfiltrados sin acción del usuario. Lección: la inyección es real y remota.',
     inc3Pill: 'OWASP',
     inc3Body:
-      'La inyección de prompts / secuestro de objetivos del agente está clasificada como el riesgo #1 de OWASP para apps con LLM y agentes. Lección: es la amenaza agéntica mejor clasificada de la industria.',
+      'La inyección de prompts / secuestro de objetivos es el riesgo #1 de OWASP para apps con LLM y agentes.',
     incClose:
-      'Procedencia, reglas estrictas y un registro a prueba de alteraciones son la respuesta directa a estos tres.',
+      'Procedencia, reglas estrictas y un registro a prueba de alteraciones responden directo a los tres.',
   },
   en: {
     eyebrow: 'Security',
-    title: "Why asking an AI to police itself isn't enough — and what we do instead.",
-    sub: "Here's how it actually works. The attack: a web page or email the agent reads hides an instruction that quietly swaps who gets paid. The agent thinks it's doing its job. The place the trick lands isn't where the damage shows up.",
+    title: "Asking an AI to police itself isn't enough. Here's what we do instead.",
+    sub: 'The attack: a page or email the agent reads hides an instruction that quietly swaps who gets paid. The trick lands far from where the damage shows up.',
 
-    check1Pill: 'Check 1 — Where did the request come from? (the moat)',
+    check1Pill: 'Check 1 — Where did it come from? (the moat)',
     check1Lead: 'Every payment gets one question:',
     check1Question:
-      'did this come from you, or from a web page the agent read partway through the job?',
+      'did this come from you, or from a page the agent read partway through the job?',
     check1Body:
-      " We track where each payee came from — your instruction, a page the agent read, or a tool's output — and separately check whether that payee was ever in what you actually asked for. A payee that showed up out of a page the agent read, and traces back to nothing you said, is the classic swap — and our biggest red flag.",
+      ' We track where each payee came from and check whether it was ever in what you actually asked for. One that showed up out of the content and traces back to nothing you said is the classic swap — our biggest red flag.',
 
     check2Pill: "Check 2 — Hard rules for things you can't undo",
     check2Body1:
-      'Flat-out blocks for the dangerous stuff — wiping a database, deleting files, reading secret keys, breaking production. These run ',
+      'Flat-out blocks for the dangerous stuff (wiping a database, reading secrets, breaking production). They run ',
     check2Em: 'before',
     check2Body2:
-      ' any AI is involved, and nothing can talk them out of a no. A hijacked AI can be persuaded; a hard rule on ',
+      ' any AI is involved, and nothing talks them out of a no. An AI can be persuaded; a hard rule on ',
     check2Body3: ' cannot.',
 
     check3Pill: 'Check 3 — Your limits, your list, and does it add up',
     check3Body:
-      'Your own rules: caps per payment and per month, a list of who\'s allowed to be paid, what it can be spent on, and "never paid them before → ask a human first." Plus a sanity check (does the payee match the store and the actual cart or invoice?) and a watch for too many payments too fast. A new or unknown payee gets flagged, never waved through.',
+      'Caps per payment and per month, a list of who can be paid, and "new account → ask a human first." Plus a sanity check (does the payee match the store or invoice?) and a watch for too many payments too fast.',
 
-    check4Pill: 'Check 4 — An AI second opinion, as one input among several',
-    check4Body1:
-      "A fast AI (Claude Haiku) weighs in on new or unclear tricks and adds one more input to the score. It's ",
-    check4Strong: 'never the only thing standing between a payment and an attacker',
+    check4Pill: 'Check 4 — An AI, as one signal among several',
+    check4Body1: 'A fast AI (Claude Haiku) weighs in on new tricks and adds one signal. ',
+    check4Strong: 'Never the only thing between a payment and an attacker',
     check4Body2:
-      ", and it can't override the hard rules or the where-did-it-come-from check. If it's slow or down, the engine keeps working and leans on the hard rules.",
+      ", and it can't override the hard rules or the where-it-came-from check. If it fails, the engine keeps going on the rules.",
     check4BoxTitle: 'Why not just put one AI in charge?',
     check4BoxBody:
-      " Because that AI can be hijacked too. The same poisoned page that fools the agent can fool an AI guard. Hard rules and where-it-came-from can't be argued with — they're the floor the AI sits on top of.",
+      ' Because it can be hijacked too: the same poisoned page that fools the agent fools the AI guard. Hard rules and where-it-came-from cannot be argued with.',
 
-    proofPill: "Proof — a record that can't be secretly changed",
+    proofPill: 'Proof — a tamper-evident record',
     proofBody1: 'Every decision is locked to the one before it:',
     proofBody2:
-      ". Edit any past entry and it stops matching — every entry after it breaks too, so the check turns red at the exact row someone touched. Don't take the agent's word that it worked — verify the record. (Next up: regularly stamp a fingerprint of the record somewhere public, so even we can't rewrite history without it showing.)",
-
-    mini1t: 'When in doubt, stop',
-    mini1d:
-      'If something breaks inside, it asks a human first — it never quietly lets a payment through.',
-    mini2t: 'A human can step in',
-    mini2d:
-      "Unclear payments wait for a yes in the in-app approval queue; nothing you can't undo happens unwatched.",
-    mini3t: 'Nothing skipped on the quiet',
-    mini3d:
-      "If anything got cut short or skipped, it's written down — 'we checked everything' has to be true, not assumed.",
+      ". Edit any past entry and it stops matching — everything after it breaks and the check turns red at that row. Don't take the agent's word: verify the record.",
 
     incEyebrow: 'Real risk',
     incTitle: 'Grounded in real incidents',
     incSub:
-      "This isn't theory. It already happened in production — and it's exactly what this architecture is built to stop.",
+      "Not theory — it already happened in production, and it's exactly what this architecture stops.",
     inc1Pill: 'Replit (2025)',
     inc1Body:
-      "An AI coding agent deleted a live production database during a code freeze. It then misreported — lied about — what it had done. Lesson: never trust an agent's self-reported success; verify the record.",
+      "An agent deleted a live production database during a code freeze, then lied about what it had done. Lesson: never trust an agent's self-reported success — verify the record.",
     inc2Pill: 'EchoLeak (2025)',
     inc2Body:
-      'The first zero-click prompt-injection vulnerability disclosed in a production AI agent (a CVE): data exfiltrated with no user action. Lesson: injection is a real, remote attack surface, not theoretical.',
+      'The first zero-click prompt-injection vulnerability (a CVE) in a production AI agent: data exfiltrated with no user action. Lesson: injection is real and remote.',
     inc3Pill: 'OWASP',
     inc3Body:
-      "Prompt injection / agent goal-hijacking is ranked OWASP's #1 risk for LLM and agentic apps. Lesson: this is the industry's top-ranked agentic threat.",
+      "Prompt injection / agent goal-hijacking is OWASP's #1 risk for LLM and agentic apps.",
     incClose:
       'Provenance, hard rules, and a tamper-evident record are the direct answer to all three.',
   },
@@ -193,12 +169,6 @@ export default function SecurityPage() {
             {t.proofBody2}
           </p>
         </Card>
-
-        <div className="grid gap-4 md:grid-cols-3">
-          <Mini t={t.mini1t} d={t.mini1d} />
-          <Mini t={t.mini2t} d={t.mini2d} />
-          <Mini t={t.mini3t} d={t.mini3d} />
-        </div>
       </Section>
 
       <Section className="space-y-4">
@@ -222,14 +192,5 @@ export default function SecurityPage() {
         <p className="text-sm leading-relaxed text-ink">{t.incClose}</p>
       </Section>
     </>
-  );
-}
-
-function Mini({ t, d }: { t: string; d: string }) {
-  return (
-    <div className="panel p-4">
-      <div className="text-sm font-semibold text-ink">{t}</div>
-      <div className="mt-1 text-xs leading-relaxed text-ink-dim">{d}</div>
-    </div>
   );
 }

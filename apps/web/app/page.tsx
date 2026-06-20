@@ -72,25 +72,6 @@ const COPY = {
       },
     ],
 
-    archEyebrow: 'Cómo se conecta',
-    archTitle: 'Una línea para instalar. Tú pones las reglas.',
-    archSub:
-      'Specter es una verificación rápida que se sienta entre tu agente y su dinero. Conéctalo con un hook de Claude Code, nuestro SDK o un proxy — y cada pago pasa por ahí.',
-    minis: [
-      {
-        t: 'Configúralo una vez',
-        d: 'Elige tus límites, quién puede cobrar y cuándo preguntarle a un humano — en cosa de un minuto.',
-      },
-      {
-        t: 'Cubre todo',
-        d: 'Cada pago, reembolso o acción riesgosa pasa por la misma verificación.',
-      },
-      {
-        t: 'Encaja en tu stack',
-        d: 'Funciona con Stripe hoy; más opciones de pago se conectan detrás de la misma verificación.',
-      },
-    ],
-
     worksWith: 'Funciona con',
     devEyebrow: 'Para developers',
     devTitle: 'Conéctalo en una línea — pruébalo ya.',
@@ -170,25 +151,6 @@ const COPY = {
         pill: '3 · Prove it',
         title: 'Keep proof nobody can fake',
         body: "Every decision goes into a record that can't be secretly changed. Don't take the agent's word that all went fine — check the receipts yourself.",
-      },
-    ],
-
-    archEyebrow: 'How it plugs in',
-    archTitle: 'One line to install. You set the rules.',
-    archSub:
-      'Specter is one quick check that sits between your agent and its money. Connect it with a Claude Code hook, our SDK, or a proxy — then every payment runs through it.',
-    minis: [
-      {
-        t: 'Set it once',
-        d: "Pick your limits, who's allowed to get paid, and when to ask a human — in about a minute.",
-      },
-      {
-        t: 'Covers everything',
-        d: 'Every payment, refund, or risky action runs through the same check.',
-      },
-      {
-        t: 'Fits your stack',
-        d: 'Works with Stripe today; more payment options plug in behind the same check.',
       },
     ],
 

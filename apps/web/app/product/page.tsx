@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { Diagram } from '@/components/Diagram';
 import { Card, Pill, Section, SectionHead } from '@/components/ui';
 import { useLang } from '@/lib/i18n';
 
@@ -33,12 +32,6 @@ const COPY = {
       '• Un registro que no se puede cambiar en secreto, cada vez',
       '• Actualizaciones en vivo a tu panel',
     ],
-
-    fitEyebrow: 'Cómo encaja',
-    fitTitle: 'Agente → Specter lo revisa → pago + comprobante',
-    fitBodyPre: 'Una línea para conectar: agrega nuestro',
-    fitBodyPost:
-      ', o ponnos delante de tus herramientas. Funciona con Claude Code, Cursor, OpenCode o cualquier agente.',
 
     detectCards: [
       {
@@ -86,12 +79,6 @@ const COPY = {
       "• A record that can't be secretly changed, every time",
       '• Live updates to your dashboard',
     ],
-
-    fitEyebrow: 'How it fits',
-    fitTitle: 'Agent → Specter checks it → payment + receipt',
-    fitBodyPre: 'One line to plug in: drop in our',
-    fitBodyPost:
-      ', or put us in front of your tools. Works with Claude Code, Cursor, OpenCode, or any agent.',
 
     detectCards: [
       {
@@ -147,18 +134,6 @@ export default function ProductPage() {
             </ul>
           </Card>
         </div>
-      </Section>
-
-      <Section>
-        <SectionHead eyebrow={t.fitEyebrow} title={t.fitTitle} />
-        <div className="mt-6">
-          <Diagram />
-        </div>
-        <p className="mt-4 max-w-3xl text-sm text-ink-dim">
-          {t.fitBodyPre}
-          <span className="mono"> @specter/sdk</span>
-          {t.fitBodyPost}
-        </p>
       </Section>
 
       <Section className="!pt-4">
