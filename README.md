@@ -63,7 +63,7 @@ ella. Una línea para instalar.
 | `packages/db` | Capa de almacenamiento — store de Supabase (Postgres) + mock en memoria, migraciones SQL, runners de `seed` y `migrate`. |
 | `packages/sdk` | Cliente `Guard` + hook PreToolUse de Claude Code. El conector delgado. |
 | `apps/api` | API de decisión en Hono: `/v1/evaluate`, `/v1/audit`, incidentes, hook de Claude Code. Dockerizada, corre en Fly.io. |
-| `apps/agent` | Agente de compras de referencia + escenarios de ataque (adaptadores Firecrawl/Stripe, con fallback mock). El crash test. |
+| `apps/agent` | Agente de compras + agente de portafolio Fintual + escenarios de ataque (adaptadores Firecrawl/Stripe/Fintual, con fallback mock). El crash test. |
 | `apps/web` | Sitio Next.js 16 (App Router, React 19): marketing + panel + crash test interactivo + login. Se despliega en Vercel. Bilingüe ES/EN. |
 | `e2e` | Pruebas end-to-end de todo el stack. |
 
@@ -247,4 +247,11 @@ pnpm demo
 
 TypeScript · pnpm workspaces · Hono · Next.js 16 / React 19 · Tailwind · Supabase
 (Postgres + RLS + Realtime + Auth) · Vitest · Fly.io · Vercel · Anthropic (Claude) ·
-Stripe · Firecrawl · ElevenLabs / Web Speech (voz) · Resend (email).
+Stripe · Firecrawl · Fintual (portafolio) · ElevenLabs (voz ES/EN) · Kapso (WhatsApp) ·
+Resend (email).
+
+> **Fintual** — un agente que gestiona tu portafolio de inversión es otro agente que
+> mueve dinero. `apps/agent` incluye `runFintualMove` (lee el NAV real del fondo vía
+> la API pública de Fintual) y enruta el retiro por Specter: un retiro a tu cuenta de
+> siempre se permite/retiene, pero uno secuestrado hacia una cuenta inyectada en el
+> contenido se **bloquea**. `pnpm --filter @specter/agent scenario:fintual`

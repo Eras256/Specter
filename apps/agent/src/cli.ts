@@ -1,6 +1,7 @@
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { runCheckout, type ShoppingTask, type TaskOutcome } from './agent.js';
+import { type FintualScenario, runFintualMove } from './fintual-agent.js';
 import { SCENARIOS, type ScenarioName } from './scenarios.js';
 
 // Load the repo-root .env (Node 22 native) so ANTHROPIC_API_KEY etc. are present.
@@ -19,6 +20,8 @@ interface Flags {
   url?: string;
   merchant?: string;
   prompt?: string;
+  /** Fintual portfolio agent: 'legit' | 'injected' | 'all'. */
+  fintual?: string;
 }
 
 function parseFlags(argv: string[]): Flags {
@@ -37,6 +40,7 @@ function parseFlags(argv: string[]): Flags {
     url: get('url'),
     merchant: get('merchant'),
     prompt: get('prompt'),
+    fintual: get('fintual'),
   };
 }
 
@@ -77,6 +81,20 @@ async function main() {
     };
     banner(`live scrape: ${flags.url}  (protection ${prot})`);
     await runTask(liveTask, flags);
+    console.log('');
+    return;
+  }
+
+  // Fintual: an AI agent managing your investment portfolio. Reads real fund data
+  // from Fintual's public API; Specter blocks a hijacked withdrawal.
+  if (flags.fintual) {
+    const scen: FintualScenario[] =
+      flags.fintual === 'all' ? ['legit', 'injected'] : [flags.fintual as FintualScenario];
+    for (const s of scen) {
+      banner(`Fintual: ${s}  (protección ${prot})`);
+      const outcome = await runFintualMove(s, { protection: flags.protection });
+      for (const line of outcome.narrative) console.log(`  ${line}`);
+    }
     console.log('');
     return;
   }

@@ -9,6 +9,7 @@
     "scenario:legit": "tsx src/cli.ts --scenario=legit",
     "scenario:injected": "tsx src/cli.ts --scenario=injected",
     "scenario:unprotected": "tsx src/cli.ts --scenario=injected --protection=off",
+    "scenario:fintual": "tsx src/cli.ts --fintual=all",
     "dev": "tsx src/cli.ts --scenario=all",
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run"
