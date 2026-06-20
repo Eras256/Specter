@@ -32,6 +32,9 @@ export interface RecordedDecision {
   incident?: IncidentRow;
 }
 
+/** A transaction row plus the resolved agent display name (agent_id is a UUID in Supabase). */
+export type TransactionView = TransactionRow & { agent_name?: string | null };
+
 /** A dashboard-ready incident joined with its transaction's key fields. */
 export interface IncidentView {
   id: string;
@@ -53,7 +56,7 @@ export interface SpecterStore {
   getPolicy(tenantId: string): Promise<Policy>;
   getRuntimeState(tenantId: string, agentName: string): Promise<RuntimeState>;
   recordDecision(input: RecordDecisionInput): Promise<RecordedDecision>;
-  listTransactions(tenantId: string, limit?: number, offset?: number): Promise<TransactionRow[]>;
+  listTransactions(tenantId: string, limit?: number, offset?: number): Promise<TransactionView[]>;
   listAudit(
     tenantId: string,
     limit?: number,
@@ -218,8 +221,12 @@ export class MemoryStore implements SpecterStore {
     return { transaction: txn, audit: auditRow, incident };
   }
 
-  async listTransactions(tenantId: string, limit = 50, offset = 0): Promise<TransactionRow[]> {
-    return this.txns.filter((t) => t.tenant_id === tenantId).slice(offset, offset + limit);
+  async listTransactions(tenantId: string, limit = 50, offset = 0): Promise<TransactionView[]> {
+    // In the memory store agent_id already IS the agent name.
+    return this.txns
+      .filter((t) => t.tenant_id === tenantId)
+      .slice(offset, offset + limit)
+      .map((t) => ({ ...t, agent_name: t.agent_id }));
   }
 
   async listAudit(

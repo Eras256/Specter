@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLang } from '@/lib/i18n';
 import { ageLabel, fmt, sampleFeed, type Txn } from '@/lib/specter';
+import { LIVE_BACKEND, SPECTER_API_KEY, SPECTER_API_URL } from '@/lib/supabase';
 import { speak } from '@/lib/voice';
 
 const COPY = {
@@ -14,6 +15,9 @@ const COPY = {
     resume: '▶ reanudar',
     pause: '⏸ pausar',
     listen: '🔊 Resumen',
+    liveTag: 'en vivo',
+    demoTag: 'demo',
+    empty: 'Aún no hay pagos — corre el demo en vivo o espera la próxima ronda.',
   },
   en: {
     paymentsChecked: 'Payments checked',
@@ -23,6 +27,9 @@ const COPY = {
     resume: '▶ resume',
     pause: '⏸ pause',
     listen: '🔊 Summary',
+    liveTag: 'live',
+    demoTag: 'demo',
+    empty: 'No payments yet — run the live demo or wait for the next round.',
   },
 } as const;
 
@@ -31,6 +38,44 @@ const dotClass = (d: Txn['decision']) =>
 const decisionText = (d: Txn['decision']) =>
   d === 'allow' ? 'text-safe' : d === 'deny' ? 'text-block' : 'text-review';
 
+/** Shape of a row from the real decision API (`/v1/transactions`). */
+interface ApiTxn {
+  id: string;
+  agent_id: string | null;
+  agent_name?: string | null;
+  session_id: string | null;
+  type: string;
+  amount: number | null;
+  currency: string | null;
+  destination: string | null;
+  merchant_claimed: string | null;
+  decision: string;
+  risk_score: number;
+  reason: string | null;
+  signals?: Record<string, string> | null;
+  created_at: string;
+}
+
+function mapTxn(r: ApiTxn): Txn {
+  const ageSec = Math.max(0, Math.round((Date.now() - new Date(r.created_at).getTime()) / 1000));
+  return {
+    id: r.id,
+    agent: r.agent_name ?? r.agent_id ?? 'agent',
+    sessionId: r.session_id ?? '',
+    type: (r.type as Txn['type']) ?? 'payment',
+    amount: r.amount ?? undefined,
+    currency: r.currency ?? undefined,
+    destination: r.destination ?? '',
+    merchantClaimed: r.merchant_claimed ?? undefined,
+    decision: (r.decision as Txn['decision']) ?? 'allow',
+    riskScore: r.risk_score ?? 0,
+    reason: r.reason ?? '',
+    signals: r.signals ?? {},
+    ageSec,
+  };
+}
+
+// DEMO fallback only: the merchants the simulation cycles through.
 const NEW_MERCHANTS: Array<[string, string, number]> = [
   ['Acme Store', 'acct_acme_store', 64],
   ['CloudHost Inc', 'acct_cloudhost', 120],
@@ -39,14 +84,37 @@ const NEW_MERCHANTS: Array<[string, string, number]> = [
 ];
 
 export function Feed() {
-  const [rows, setRows] = useState<Txn[]>(() => sampleFeed());
-  const [paused, setPaused] = useState(false);
-  const n = useRef(0);
   const { lang } = useLang();
   const t = COPY[lang];
+  // LIVE: start empty and fill from the real feed. DEMO: start with the sample.
+  const [rows, setRows] = useState<Txn[]>(() => (LIVE_BACKEND ? [] : sampleFeed()));
+  const [paused, setPaused] = useState(false);
+  const n = useRef(0);
+
+  // LIVE mode — poll the real decision feed from the API on Fly.
+  const refetch = useCallback(async () => {
+    try {
+      const res = await fetch(`${SPECTER_API_URL}/v1/transactions?limit=60`, {
+        headers: { 'x-api-key': SPECTER_API_KEY },
+      });
+      if (!res.ok) return;
+      const body = (await res.json()) as { transactions?: ApiTxn[] };
+      setRows((body.transactions ?? []).map(mapTxn));
+    } catch {
+      /* keep last good state on transient errors */
+    }
+  }, []);
 
   useEffect(() => {
-    if (paused) return;
+    if (!LIVE_BACKEND || paused) return;
+    void refetch();
+    const id = setInterval(() => void refetch(), 6000);
+    return () => clearInterval(id);
+  }, [refetch, paused]);
+
+  // DEMO mode — fabricate a lively feed when there is no backend configured.
+  useEffect(() => {
+    if (LIVE_BACKEND || paused) return;
     const id = setInterval(() => {
       n.current++;
       const [m, acct, amt] = NEW_MERCHANTS[n.current % NEW_MERCHANTS.length]!;
@@ -106,8 +174,13 @@ export function Feed() {
       <div className="panel overflow-hidden">
         <div className="flex items-center justify-between border-b border-line bg-panel-2 px-4 py-2.5">
           <div className="flex items-center gap-2">
-            <span className="h-2 w-2 animate-pulse-ring rounded-full bg-safe" />
+            <span
+              className={`h-2 w-2 rounded-full ${LIVE_BACKEND ? 'animate-pulse-ring bg-safe' : 'bg-ink-faint'}`}
+            />
             <span className="mono text-[11px] text-ink-dim">{t.livePayments}</span>
+            <span className="mono text-[10px] uppercase tracking-wider text-ink-faint">
+              {LIVE_BACKEND ? t.liveTag : t.demoTag}
+            </span>
           </div>
           <div className="flex items-center gap-3">
             <button
@@ -127,33 +200,37 @@ export function Feed() {
           </div>
         </div>
         <div className="scroll-thin max-h-[520px] overflow-y-auto divide-y divide-line/60">
-          {rows.map((r) => (
-            <div
-              key={r.id}
-              className="flex items-center gap-3 px-4 py-2.5 animate-flow-down hover:bg-panel-2/50"
-            >
-              <span className={`dot ${dotClass(r.decision)}`} />
-              <span className="mono w-[120px] shrink-0 truncate text-[11px] text-ink-dim">
-                {r.agent}
-              </span>
-              <span className="mono w-[64px] shrink-0 text-[11px] text-ink-faint">{r.type}</span>
-              <span className="mono w-[88px] shrink-0 text-right text-[12px] text-ink">
-                {r.amount != null ? `$${fmt(r.amount)}` : '—'}
-              </span>
-              <span className="mono flex-1 truncate text-[11px] text-ink-dim">
-                → {r.destination}
-                {r.merchantClaimed ? `  (${r.merchantClaimed})` : ''}
-              </span>
-              <span
-                className={`mono w-[58px] shrink-0 text-right text-[11px] font-semibold uppercase ${decisionText(r.decision)}`}
+          {rows.length === 0 ? (
+            <div className="px-4 py-8 text-center text-sm text-ink-dim">{t.empty}</div>
+          ) : (
+            rows.map((r) => (
+              <div
+                key={r.id}
+                className="flex items-center gap-3 px-4 py-2.5 animate-flow-down hover:bg-panel-2/50"
               >
-                {r.decision}
-              </span>
-              <span className="mono w-[58px] shrink-0 text-right text-[10px] text-ink-faint">
-                {ageLabel(r.ageSec)}
-              </span>
-            </div>
-          ))}
+                <span className={`dot ${dotClass(r.decision)}`} />
+                <span className="mono w-[120px] shrink-0 truncate text-[11px] text-ink-dim">
+                  {r.agent}
+                </span>
+                <span className="mono w-[64px] shrink-0 text-[11px] text-ink-faint">{r.type}</span>
+                <span className="mono w-[88px] shrink-0 text-right text-[12px] text-ink">
+                  {r.amount != null ? `$${fmt(r.amount)}` : '—'}
+                </span>
+                <span className="mono flex-1 truncate text-[11px] text-ink-dim">
+                  → {r.destination}
+                  {r.merchantClaimed ? `  (${r.merchantClaimed})` : ''}
+                </span>
+                <span
+                  className={`mono w-[58px] shrink-0 text-right text-[11px] font-semibold uppercase ${decisionText(r.decision)}`}
+                >
+                  {r.decision}
+                </span>
+                <span className="mono w-[58px] shrink-0 text-right text-[10px] text-ink-faint">
+                  {ageLabel(r.ageSec)}
+                </span>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

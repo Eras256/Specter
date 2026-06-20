@@ -17,6 +17,7 @@ import {
   type RecordedDecision,
   type SpecterStore,
   sha256Hex,
+  type TransactionView,
 } from './store.js';
 import type { AuditRow, IncidentRow, PolicyRow, TransactionRow } from './types.js';
 
@@ -188,14 +189,20 @@ export class SupabaseStore implements SpecterStore {
     return { transaction: txn, audit: auditData as AuditRow, incident };
   }
 
-  async listTransactions(tenantId: string, limit = 50, offset = 0): Promise<TransactionRow[]> {
+  async listTransactions(tenantId: string, limit = 50, offset = 0): Promise<TransactionView[]> {
+    // Join the agents table so the feed shows a readable name, not the UUID FK.
     const { data } = await this.db
       .from('transactions')
-      .select('*')
+      .select('*, agents(name)')
       .eq('tenant_id', tenantId)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
-    return (data ?? []) as TransactionRow[];
+    return ((data ?? []) as Array<TransactionRow & { agents?: { name?: string } | null }>).map(
+      (r) => {
+        const { agents, ...row } = r;
+        return { ...row, agent_name: agents?.name ?? null };
+      },
+    );
   }
 
   async listAudit(
