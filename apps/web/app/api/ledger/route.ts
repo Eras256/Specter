@@ -6,6 +6,8 @@
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+const NO_STORE = { 'Cache-Control': 'no-store, max-age=0, must-revalidate' };
+
 interface AuditRecord {
   seq: number;
   hash: string;
@@ -59,9 +61,12 @@ export async function GET(): Promise<Response> {
       at: r.record?.at ?? r.created_at ?? null,
     }));
 
-    return Response.json({ records, verify, live: true });
+    return Response.json({ records, verify, live: true }, { headers: NO_STORE });
   } catch {
     // Degrade gracefully — the strip simply hides when the backend is unreachable.
-    return Response.json({ records: [], verify: { valid: true }, live: false });
+    return Response.json(
+      { records: [], verify: { valid: true }, live: false },
+      { headers: NO_STORE },
+    );
   }
 }

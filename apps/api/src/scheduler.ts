@@ -93,11 +93,22 @@ const ROUNDS: Round[] = [
   },
 ];
 
-let cursor = 0;
+/**
+ * Pick the scenario by wall-clock slot, not an in-memory counter. This advances
+ * the cycle every `intervalMs` AND survives restarts/redeploys — otherwise every
+ * boot would reset to ROUNDS[0] (always the hijack) and the feed would only ever
+ * show denies.
+ */
+function pickRound(intervalMs: number): Round | undefined {
+  const idx = Math.floor(Date.now() / intervalMs) % ROUNDS.length;
+  return ROUNDS[idx];
+}
 
-async function runOneRound(tenant: { tenantId: string; tenantName: string }): Promise<void> {
-  const base = ROUNDS[cursor % ROUNDS.length];
-  cursor += 1;
+async function runOneRound(
+  tenant: { tenantId: string; tenantName: string },
+  intervalMs: number,
+): Promise<void> {
+  const base = pickRound(intervalMs);
   if (!base) return;
   try {
     await evaluateAndRecord(tenant, base);
@@ -127,9 +138,9 @@ export function startScheduledRounds(): void {
       `🤖 Specter 24/7 rounds every ${Math.round(intervalMs / 1000)}s [tenant:${tenant.tenantId}]`,
     );
     // Kick one off shortly after boot so the ledger shows fresh activity fast.
-    const first = setTimeout(() => void runOneRound(tenant), 4000);
+    const first = setTimeout(() => void runOneRound(tenant, intervalMs), 4000);
     first.unref?.();
-    const timer = setInterval(() => void runOneRound(tenant), intervalMs);
+    const timer = setInterval(() => void runOneRound(tenant, intervalMs), intervalMs);
     timer.unref?.();
   })().catch(() => {
     // resolving the tenant failed (transient DB error) — leave rounds off

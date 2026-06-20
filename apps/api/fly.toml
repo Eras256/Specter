@@ -15,10 +15,12 @@ primary_region = "iad"
 [env]
   SPECTER_PORT = "8080"
   NODE_ENV = "production"
-  # Always-on attacker-vs-protector rounds: one real decision every 15 min,
-  # appended to the tamper-evident chain (stays under the velocity cap so the
-  # allow/deny/review mix stays realistic). See src/scheduler.ts.
-  ROUND_INTERVAL_MS = "900000"
+  # Always-on attacker-vs-protector rounds: one real decision every 3 min,
+  # appended to the tamper-evident chain. The scenario advances by wall-clock so
+  # restarts don't replay the same one. Demo Co's velocity cap (60/h) is set
+  # above the cron's payment rate so clean rounds still resolve ALLOW.
+  # See src/scheduler.ts.
+  ROUND_INTERVAL_MS = "180000"
 
 [http_service]
   internal_port = 8080
