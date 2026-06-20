@@ -55,9 +55,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error?.message };
   };
 
+  // Send confirmation / magic-link emails back to whatever origin the user is on
+  // (the live domain in prod, localhost in dev) — no hardcoded URL. The origin
+  // must be allow-listed in Supabase → Authentication → URL Configuration.
+  const redirectTo =
+    typeof window !== 'undefined' ? `${window.location.origin}/dashboard` : undefined;
+
   const signUpPassword = async (email: string, password: string) => {
     if (!sb) return { error: 'Auth not configured' };
-    const { data, error } = await sb.auth.signUp({ email, password });
+    const { data, error } = await sb.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: redirectTo },
+    });
     if (error) return { error: error.message };
     // No session returned ⇒ the project requires email confirmation.
     return { needsConfirm: !data.session };
@@ -65,7 +75,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInMagic = async (email: string) => {
     if (!sb) return { error: 'Auth not configured' };
-    const { error } = await sb.auth.signInWithOtp({ email });
+    const { error } = await sb.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: redirectTo },
+    });
     return { error: error?.message, sent: !error };
   };
 

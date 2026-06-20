@@ -11,11 +11,12 @@ export const metadata: Metadata = {
   title: 'Specter — security for AI agents that spend money',
   description:
     'AI agents are starting to spend real money — and one poisoned web page can trick one into paying a scammer. Specter catches the hijack, stops the payment before it happens, and leaves proof you can check.',
-  metadataBase: new URL('https://specter.security'),
+  metadataBase: new URL('https://specter-ia.vercel.app'),
   openGraph: {
     title: 'Specter — security for AI agents that spend money',
     description: 'Watch Specter catch a hijacked AI agent — live. Catch it, stop it, prove it.',
     type: 'website',
+    url: 'https://specter-ia.vercel.app',
   },
 };
 

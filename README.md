@@ -20,8 +20,8 @@ El producto es una **API de decisión** (el cerebro) + un **conector delgado** (
 de Claude Code, un wrapper del SDK o un proxy) que conecta las acciones del agente con
 ella. Una línea para instalar.
 
+- **Sitio en vivo:** https://specter-ia.vercel.app
 - **API de decisión en vivo:** https://specter-decision-api.fly.dev
-- **Web (marketing + panel + crash test en vivo):** se despliega en Vercel (ver abajo)
 
 ---
 
