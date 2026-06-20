@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { Diagram } from '@/components/Diagram';
 import { LiveAgents } from '@/components/LiveAgents';
 import { Card, Pill, Section, SectionHead, Stat } from '@/components/ui';
 import { useLang } from '@/lib/i18n';
@@ -93,6 +92,15 @@ const COPY = {
     ],
 
     worksWith: 'Funciona con',
+    devEyebrow: 'Para developers',
+    devTitle: 'Conéctalo en una línea — pruébalo ya.',
+    devSub: 'El SDK es el "plug"; el API es el producto. Ambos públicos y en vivo.',
+    sdkTitle: 'SDK · specter-sdk',
+    sdkLink: 'Ver en npm',
+    sdkDesc: 'Cliente liviano, cero dependencias: Guard.check() + hook para Claude Code.',
+    apiTitle: 'API de decisión · en vivo en Fly',
+    apiLink: 'Probar el API',
+    apiDesc: 'Cada pago pasa por aquí. Caliente en Fly, ~0.4s por verificación.',
 
     ctaTitle: 'Deja que tus agentes gasten — sin dejar entrar a los atacantes.',
     ctaSub:
@@ -185,6 +193,15 @@ const COPY = {
     ],
 
     worksWith: 'Works with',
+    devEyebrow: 'For developers',
+    devTitle: 'Plug it in in one line — try it now.',
+    devSub: 'The SDK is the plug; the API is the product. Both public and live.',
+    sdkTitle: 'SDK · specter-sdk',
+    sdkLink: 'View on npm',
+    sdkDesc: 'Zero-dependency client: Guard.check() + a Claude Code hook.',
+    apiTitle: 'Decision API · live on Fly',
+    apiLink: 'Try the API',
+    apiDesc: 'Every payment runs through here. Warm on Fly, ~0.4s per check.',
 
     ctaTitle: 'Let your agents spend — without letting attackers in.',
     ctaSub:
@@ -263,36 +280,52 @@ export default function Home() {
         </div>
       </Section>
 
-      {/* ARCHITECTURE */}
+      {/* FOR DEVELOPERS — SDK + live API, both clickable */}
       <Section>
-        <SectionHead eyebrow={t.archEyebrow} title={t.archTitle} sub={t.archSub} />
-        <div className="mt-8">
-          <Diagram />
-        </div>
-        <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          {t.minis.map((m) => (
-            <Mini key={m.t} t={m.t} d={m.d} />
-          ))}
-        </div>
-      </Section>
+        <SectionHead eyebrow={t.devEyebrow} title={t.devTitle} sub={t.devSub} />
+        <div className="mt-8 grid gap-4 md:grid-cols-2">
+          <a
+            href="https://www.npmjs.com/package/specter-sdk"
+            target="_blank"
+            rel="noreferrer"
+            className="panel group block p-6 transition hover:border-specter/50"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-ink">{t.sdkTitle}</span>
+              <span className="text-xs text-specter-soft group-hover:underline">{t.sdkLink} →</span>
+            </div>
+            <pre className="mono mt-3 overflow-x-auto rounded-md bg-bg p-3 text-[12px] text-ink-dim">
+              npm i specter-sdk
+            </pre>
+            <p className="mt-3 text-sm leading-relaxed text-ink-dim">{t.sdkDesc}</p>
+          </a>
 
-      {/* INTEGRATIONS */}
-      <Section className="!py-12">
-        <div className="panel flex flex-wrap items-center justify-center gap-x-8 gap-y-3 px-6 py-6 text-sm text-ink-faint">
+          <a
+            href="https://specter-decision-api.fly.dev/health"
+            target="_blank"
+            rel="noreferrer"
+            className="panel group block p-6 transition hover:border-specter/50"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-ink">{t.apiTitle}</span>
+              <span className="text-xs text-specter-soft group-hover:underline">{t.apiLink} →</span>
+            </div>
+            <pre className="mono mt-3 overflow-x-auto rounded-md bg-bg p-3 text-[12px] text-ink-dim">
+              POST specter-decision-api.fly.dev/v1/evaluate
+            </pre>
+            <p className="mt-3 text-sm leading-relaxed text-ink-dim">{t.apiDesc}</p>
+          </a>
+        </div>
+
+        <div className="panel mt-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 px-6 py-4 text-sm text-ink-faint">
           <span className="text-ink-dim">{t.worksWith}</span>
-          {[
-            'Claude Code',
-            'Cursor',
-            'OpenCode',
-            'Vercel AI SDK',
-            'Stripe',
-            'Firecrawl',
-            'Supabase',
-          ].map((x) => (
-            <span key={x} className="mono">
-              {x}
-            </span>
-          ))}
+          {['Claude Code', 'Cursor', 'Vercel AI SDK', 'Stripe', 'Firecrawl', 'Supabase'].map(
+            (x) => (
+              <span key={x} className="mono">
+                {x}
+              </span>
+            ),
+          )}
         </div>
       </Section>
 
@@ -314,14 +347,5 @@ export default function Home() {
         </div>
       </Section>
     </>
-  );
-}
-
-function Mini({ t, d }: { t: string; d: string }) {
-  return (
-    <div className="panel p-4">
-      <div className="text-sm font-medium text-ink">{t}</div>
-      <div className="mt-1 text-xs leading-relaxed text-ink-dim">{d}</div>
-    </div>
   );
 }
