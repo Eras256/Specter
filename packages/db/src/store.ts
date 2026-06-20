@@ -54,7 +54,12 @@ export interface SpecterStore {
   getRuntimeState(tenantId: string, agentName: string): Promise<RuntimeState>;
   recordDecision(input: RecordDecisionInput): Promise<RecordedDecision>;
   listTransactions(tenantId: string, limit?: number, offset?: number): Promise<TransactionRow[]>;
-  listAudit(tenantId: string, limit?: number, offset?: number): Promise<AuditRow[]>;
+  listAudit(
+    tenantId: string,
+    limit?: number,
+    offset?: number,
+    order?: 'asc' | 'desc',
+  ): Promise<AuditRow[]>;
   verifyAudit(tenantId: string): Promise<VerifyResult>;
   /** DEMO-ONLY: mutate a past record so verification turns red live. */
   tamperAudit(tenantId: string, seq: number): Promise<void>;
@@ -217,10 +222,15 @@ export class MemoryStore implements SpecterStore {
     return this.txns.filter((t) => t.tenant_id === tenantId).slice(offset, offset + limit);
   }
 
-  async listAudit(tenantId: string, limit = 100, offset = 0): Promise<AuditRow[]> {
+  async listAudit(
+    tenantId: string,
+    limit = 100,
+    offset = 0,
+    order: 'asc' | 'desc' = 'asc',
+  ): Promise<AuditRow[]> {
     return this.audit
       .filter((a) => a.tenant_id === tenantId)
-      .sort((a, b) => a.seq - b.seq)
+      .sort((a, b) => (order === 'desc' ? b.seq - a.seq : a.seq - b.seq))
       .slice(offset, offset + limit);
   }
 
@@ -297,7 +307,7 @@ export class MemoryStore implements SpecterStore {
   /** DEMO-ONLY: mutate a past record so verification turns red live. */
   async tamperAudit(tenantId: string, seq: number): Promise<void> {
     const row = this.audit.find((a) => a.tenant_id === tenantId && a.seq === seq);
-    if (row && row.record && typeof row.record === 'object') {
+    if (row?.record && typeof row.record === 'object') {
       (row.record as Record<string, unknown>).amount = 999999;
     }
   }

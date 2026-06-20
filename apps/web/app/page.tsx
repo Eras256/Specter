@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { LiveAgents } from '@/components/LiveAgents';
+import { LiveLedger } from '@/components/LiveLedger';
 import { Card, Pill, Section, SectionHead, Stat } from '@/components/ui';
 import { useLang } from '@/lib/i18n';
 
@@ -210,8 +211,9 @@ export default function Home() {
                   <span className="mono">{t.heroBadge3}</span>
                 </div>
               </div>
-              <div>
+              <div className="space-y-3">
                 <LiveAgents compact />
+                <LiveLedger />
                 <p className="mt-2 text-center text-xs text-ink-faint">{t.heroCaption}</p>
               </div>
             </div>

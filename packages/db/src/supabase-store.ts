@@ -198,12 +198,17 @@ export class SupabaseStore implements SpecterStore {
     return (data ?? []) as TransactionRow[];
   }
 
-  async listAudit(tenantId: string, limit = 100, offset = 0): Promise<AuditRow[]> {
+  async listAudit(
+    tenantId: string,
+    limit = 100,
+    offset = 0,
+    order: 'asc' | 'desc' = 'asc',
+  ): Promise<AuditRow[]> {
     const { data } = await this.db
       .from('audit_log')
       .select('*')
       .eq('tenant_id', tenantId)
-      .order('seq', { ascending: true })
+      .order('seq', { ascending: order !== 'desc' })
       .range(offset, offset + limit - 1);
     return (data ?? []) as AuditRow[];
   }

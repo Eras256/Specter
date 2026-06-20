@@ -40,6 +40,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     setLangState(l);
     try {
       localStorage.setItem(STORAGE_KEY, l);
+      // biome-ignore lint/suspicious/noDocumentCookie: intentional language cookie so the server can render the right locale on first paint
       document.cookie = `${STORAGE_KEY}=${l};path=/;max-age=31536000;samesite=lax`;
     } catch {
       /* ignore */

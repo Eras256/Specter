@@ -9,6 +9,7 @@ import { LangToggle } from './LangToggle';
 import { Logo } from './Logo';
 
 const LINKS = [
+  { href: '/', es: 'Inicio', en: 'Home' },
   { href: '/how-it-works', es: 'Cómo funciona', en: 'How it works' },
   { href: '/use-cases', es: 'Casos de uso', en: 'Use cases' },
   { href: '/demo', es: 'Demo en vivo', en: 'Live demo' },

@@ -15,6 +15,10 @@ primary_region = "iad"
 [env]
   SPECTER_PORT = "8080"
   NODE_ENV = "production"
+  # Always-on attacker-vs-protector rounds: one real decision every 15 min,
+  # appended to the tamper-evident chain (stays under the velocity cap so the
+  # allow/deny/review mix stays realistic). See src/scheduler.ts.
+  ROUND_INTERVAL_MS = "900000"
 
 [http_service]
   internal_port = 8080

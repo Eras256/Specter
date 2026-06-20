@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useRef, useState } from 'react';
 import { useLang } from '@/lib/i18n';
 import { playAlert } from '@/lib/voice';
@@ -19,6 +20,7 @@ interface AgentResult {
   };
   scraped: { chars: number; sourceRef: string };
   fintual?: { fund: string; nav: number; units: number; value: number; date: string };
+  audit?: { seq: number; hash: string };
 }
 
 type Phase = 'idle' | 'loading' | 'reading' | 'reveal' | 'done';
@@ -44,7 +46,9 @@ const COPY = {
     deciding: 'decidiendo…',
     via: 'decisión',
     risk: 'riesgo',
-    foot: 'Esto es real: Firecrawl scrapea la página de verdad y la decisión la toma el API de Specter en Fly. La animación muestra lo que el agente hace.',
+    proofLabel: 'prueba',
+    verify: 'verificar',
+    foot: 'Esto es real: Firecrawl scrapea la página de verdad y la decisión la toma el API de Specter en Fly. Cada decisión queda en un registro inalterable. La animación muestra lo que el agente hace.',
     verdict: {
       deny: 'BLOQUEADO',
       review: 'EN ESPERA',
@@ -72,7 +76,9 @@ const COPY = {
     deciding: 'deciding…',
     via: 'decision',
     risk: 'risk',
-    foot: "This is real: Firecrawl actually scrapes the page and Specter's API on Fly makes the call. The animation shows what the agent does.",
+    proofLabel: 'proof',
+    verify: 'verify',
+    foot: "This is real: Firecrawl actually scrapes the page and Specter's API on Fly makes the call. Every decision lands in a tamper-evident record. The animation shows what the agent does.",
     verdict: {
       deny: 'BLOCKED',
       review: 'HELD',
@@ -436,6 +442,17 @@ function Verdict({
             {result.riskScore.toFixed(2)}
           </div>
           <div className="mono text-[10px] text-ink-faint">🌐 {result.scraped.sourceRef}</div>
+          {result.audit && (
+            <div className="mono text-[10px] text-ink-faint">
+              📜 {t.proofLabel} #{result.audit.seq} · {result.audit.hash.slice(0, 18)}…{' '}
+              <Link
+                href="/dashboard"
+                className="text-specter-soft underline-offset-2 hover:underline"
+              >
+                {t.verify} →
+              </Link>
+            </div>
+          )}
           {result.fintual && (
             <div className="mono text-[10px] text-ink-faint">
               📊 NAV real: {result.fintual.fund} {result.fintual.nav} CLP

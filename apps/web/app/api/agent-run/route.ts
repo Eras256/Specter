@@ -106,7 +106,12 @@ export async function POST(req: Request): Promise<Response> {
       signal: AbortSignal.timeout(15000),
     });
     if (!res.ok) throw new Error(`specter ${res.status}`);
-    const d = (await res.json()) as { decision: string; reason: string; riskScore: number };
+    const d = (await res.json()) as {
+      decision: string;
+      reason: string;
+      riskScore: number;
+      audit?: { seq: number; hash: string };
+    };
     return Response.json({
       scenario,
       protection: true,
@@ -117,6 +122,7 @@ export async function POST(req: Request): Promise<Response> {
       decision: d.decision,
       reason: d.reason,
       riskScore: d.riskScore,
+      audit: d.audit,
     });
   } catch {
     return Response.json({ error: 'decision failed' }, { status: 502 });

@@ -2,6 +2,7 @@ import { serve } from '@hono/node-server';
 import { getStore, isSupabaseConfigured, MemoryStore } from '@specter/db';
 import { createApp } from './app.js';
 import { env } from './env.js';
+import { startScheduledRounds } from './scheduler.js';
 
 async function bootstrap() {
   // In MOCK mode, seed an in-memory backlog so the dashboard looks alive.
@@ -19,6 +20,9 @@ async function bootstrap() {
     // eslint-disable-next-line no-console
     console.log(`🛡️  Specter decision API on :${info.port}  [store:${mode}] [${llm}]`);
   });
+
+  // Always-on attacker-vs-protector rounds (no-op unless ROUND_INTERVAL_MS is set).
+  startScheduledRounds();
 }
 
 bootstrap().catch((e) => {

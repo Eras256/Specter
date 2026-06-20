@@ -21,10 +21,16 @@ type Vars = { Variables: { tenant: { tenantId: string; tenantName: string } } };
  * several), persist the decision to the tamper-evident chain, and fire the
  * human-in-the-loop alert on deny/review.
  */
-async function evaluateAndRecord(
+export interface EvaluateAndRecordResult {
+  result: DecisionResult;
+  /** The tamper-evident chain row this decision was written to (seq + hash). */
+  audit: { seq: number; hash: string };
+}
+
+export async function evaluateAndRecord(
   tenant: { tenantId: string; tenantName: string },
   base: Omit<EvaluateInput, 'policy' | 'state'>,
-): Promise<DecisionResult> {
+): Promise<EvaluateAndRecordResult> {
   const store = getStore();
   const policy = await store.getPolicy(tenant.tenantId);
   const state = await store.getRuntimeState(tenant.tenantId, base.agentId);
@@ -59,8 +65,7 @@ async function evaluateAndRecord(
       notificationEmail: policy.notificationEmail,
     });
   }
-  void recorded;
-  return result;
+  return { result, audit: { seq: recorded.audit.seq, hash: recorded.audit.hash } };
 }
 
 export function createApp() {
@@ -98,14 +103,15 @@ export function createApp() {
       action: body.action,
       context: body.context ?? { userPrompt: '', destinationOrigin: 'unknown', sourceRefs: [] },
     };
-    const result = await evaluateAndRecord(getTenant(c), base);
-    return c.json(result);
+    const { result, audit } = await evaluateAndRecord(getTenant(c), base);
+    return c.json({ ...result, audit });
   });
 
   v1.get('/audit', async (c) => {
     const limit = Number(c.req.query('limit') ?? 100);
     const offset = Number(c.req.query('offset') ?? 0);
-    const rows = await getStore().listAudit(getTenant(c).tenantId, limit, offset);
+    const order = c.req.query('order') === 'desc' ? 'desc' : 'asc';
+    const rows = await getStore().listAudit(getTenant(c).tenantId, limit, offset, order);
     return c.json({ records: rows });
   });
 
@@ -155,7 +161,7 @@ export function createApp() {
     const payload = (await c.req.json().catch(() => ({}))) as ClaudeCodeHookPayload;
     try {
       const base = payloadToEvaluateInput(payload);
-      const result = await evaluateAndRecord(getTenant(c), base);
+      const { result } = await evaluateAndRecord(getTenant(c), base);
       return c.json(decisionToHookResponse(result.decision, result.reason), 200);
     } catch (err) {
       // Fail safe: on internal error, ASK (do not silently allow), still 200.

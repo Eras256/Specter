@@ -84,7 +84,7 @@ export function checkDestructive(action: Pick<Action, 'type' | 'command'>): Dest
   if (!['db_write', 'shell', 'file', 'other'].includes(action.type)) return { matched: false };
 
   for (const rule of RULES) {
-    if (rule.test.test(command) && !(rule.unless && rule.unless.test(command))) {
+    if (rule.test.test(command) && !rule.unless?.test(command)) {
       return { matched: true, rule: rule.id, detail: rule.why };
     }
   }
