@@ -105,6 +105,10 @@ export function Incidents() {
   const t = COPY[lang];
   const [items, setItems] = useState<Item[]>(LIVE_BACKEND ? [] : SEED);
   const seen = useRef<Set<string>>(new Set());
+  // The first fetch marks existing incidents as seen WITHOUT speaking — only
+  // genuinely new incidents (arriving later) get a spoken alert, so the initial
+  // batch never plays as overlapping voices.
+  const primed = useRef(false);
 
   const refetch = useCallback(async () => {
     try {
@@ -123,13 +127,15 @@ export function Incidents() {
         reason: (i.reason as string) ?? undefined,
         status: (i.status as Item['status']) ?? 'open',
       }));
-      // Speak a one-time alert for each newly-seen OPEN incident.
+      // Speak a one-time alert for each newly-seen OPEN incident — but not the
+      // initial batch (first load just primes `seen`, silently).
       for (const m of mapped) {
         if (m.status === 'open' && !seen.current.has(m.id)) {
           seen.current.add(m.id);
-          speakIncident(voiceLine(lang, m), lang);
+          if (primed.current) speakIncident(voiceLine(lang, m), lang);
         }
       }
+      primed.current = true;
       setItems(mapped);
     } catch {
       /* keep last state on transient errors */

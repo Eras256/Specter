@@ -56,6 +56,94 @@ const COPY = {
   },
 } as const;
 
+// Spoken amount → number. Tries digits first, then Spanish/English number words
+// ("seiscientos" → 600, "five hundred" → 500, "dos mil" → 2000).
+const NUM_WORDS: Record<string, number> = {
+  cero: 0,
+  un: 1,
+  uno: 1,
+  una: 1,
+  dos: 2,
+  tres: 3,
+  cuatro: 4,
+  cinco: 5,
+  seis: 6,
+  siete: 7,
+  ocho: 8,
+  nueve: 9,
+  diez: 10,
+  veinte: 20,
+  treinta: 30,
+  cuarenta: 40,
+  cincuenta: 50,
+  sesenta: 60,
+  setenta: 70,
+  ochenta: 80,
+  noventa: 90,
+  cien: 100,
+  ciento: 100,
+  doscientos: 200,
+  trescientos: 300,
+  cuatrocientos: 400,
+  quinientos: 500,
+  seiscientos: 600,
+  setecientos: 700,
+  ochocientos: 800,
+  novecientos: 900,
+  mil: 1000,
+  zero: 0,
+  one: 1,
+  two: 2,
+  three: 3,
+  four: 4,
+  five: 5,
+  six: 6,
+  seven: 7,
+  eight: 8,
+  nine: 9,
+  ten: 10,
+  twenty: 20,
+  thirty: 30,
+  forty: 40,
+  fifty: 50,
+  sixty: 60,
+  seventy: 70,
+  eighty: 80,
+  ninety: 90,
+  hundred: 100,
+  thousand: 1000,
+};
+
+function parseAmount(text: string): number | null {
+  const digits = text.replace(/[,.]/g, '').match(/\d{2,7}/);
+  if (digits) return Number(digits[0]);
+  const tokens = text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .split(/[^a-z]+/)
+    .filter(Boolean);
+  let total = 0;
+  let current = 0;
+  let matched = false;
+  for (const tok of tokens) {
+    const v = NUM_WORDS[tok];
+    if (v === undefined) continue;
+    matched = true;
+    if (v === 1000) {
+      current = (current || 1) * 1000;
+      total += current;
+      current = 0;
+    } else if (v === 100) {
+      current = (current || 1) * 100;
+    } else {
+      current += v;
+    }
+  }
+  const n = total + current;
+  return matched && n >= 10 ? n : null;
+}
+
 /**
  * The control plane — deliberately low-friction (3–4 fields). 60-second setup is
  * a feature. Writes to Supabase in production; here it shows the resulting policy
@@ -76,19 +164,19 @@ export function PolicyWizard({ embedded = false }: { embedded?: boolean }) {
   const recRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
 
-  // Heuristic: map a spoken rule onto the policy fields. First number → per-tx cap;
-  // keywords → require-approval-on-new-destination.
+  // Heuristic: map a spoken rule onto the policy fields. Amount (digits OR number
+  // words) → per-tx cap; keywords → require-approval-on-new-destination.
   const applyTranscript = (text: string) => {
+    const amount = parseAmount(text);
+    if (amount !== null) setPerTxCap(amount);
     const lower = text.toLowerCase();
-    const num = lower.replace(/,/g, '').match(/(\d{2,7})/);
-    if (num) setPerTxCap(Number(num[1]));
     if (
       /(sin aprob|no aprob|no requ|without approv|don'?t require|do not require|allow new)/.test(
         lower,
       )
     ) {
       setApproveNew(false);
-    } else if (/(aprob|approv|nuevo|new dest|unknown|desconoc|require)/.test(lower)) {
+    } else if (/(aprob|approv|nuevo|new|desconoc|unknown|requ)/.test(lower)) {
       setApproveNew(true);
     }
   };
