@@ -1,6 +1,5 @@
 'use client';
 
-import { CrashTest } from '@/components/CrashTest';
 import { LiveAgents } from '@/components/LiveAgents';
 import { Pill, Section, SectionHead } from '@/components/ui';
 import { useLang } from '@/lib/i18n';
@@ -74,46 +73,37 @@ export default function DemoPage() {
 
       <Section className="!pt-2 !pb-8">
         <LiveAgents />
-      </Section>
-
-      <Section className="!pt-2">
-        <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-          <CrashTest />
-          <div className="space-y-4">
-            <div className="panel p-5">
-              <Pill tone="block">{t.trickPill}</Pill>
-              <p className="mt-3 text-sm leading-relaxed text-ink-dim">{t.trickBody}</p>
-            </div>
-            <div className="panel p-5">
-              <Pill tone="specter">{t.noticePill}</Pill>
-              <ul className="mt-3 space-y-2 text-sm text-ink-dim">
-                <li>
-                  <span className="mono text-specter-soft">{t.noticeOriginLabel}</span>{' '}
-                  {t.noticeOriginBody}
-                </li>
-                <li>
-                  <span className="mono text-specter-soft">{t.noticeRulesLabel}</span>{' '}
-                  {t.noticeRulesBody}
-                </li>
-                <li>
-                  <span className="mono text-specter-soft">{t.noticeMismatchLabel}</span>{' '}
-                  {t.noticeMismatchBody}
-                </li>
-              </ul>
-            </div>
-            <div className="panel p-5">
-              <Pill tone="safe">{t.proofPill}</Pill>
-              <p className="mt-3 text-sm leading-relaxed text-ink-dim">
-                {t.proofBefore}
-                <a
-                  href="/dashboard"
-                  className="text-specter-soft underline-offset-4 hover:underline"
-                >
-                  {t.proofLink}
-                </a>
-                {t.proofAfter}
-              </p>
-            </div>
+        <div className="mt-6 grid gap-4 md:grid-cols-3">
+          <div className="panel p-5">
+            <Pill tone="block">{t.trickPill}</Pill>
+            <p className="mt-3 text-sm leading-relaxed text-ink-dim">{t.trickBody}</p>
+          </div>
+          <div className="panel p-5">
+            <Pill tone="specter">{t.noticePill}</Pill>
+            <ul className="mt-3 space-y-2 text-sm text-ink-dim">
+              <li>
+                <span className="mono text-specter-soft">{t.noticeOriginLabel}</span>{' '}
+                {t.noticeOriginBody}
+              </li>
+              <li>
+                <span className="mono text-specter-soft">{t.noticeRulesLabel}</span>{' '}
+                {t.noticeRulesBody}
+              </li>
+              <li>
+                <span className="mono text-specter-soft">{t.noticeMismatchLabel}</span>{' '}
+                {t.noticeMismatchBody}
+              </li>
+            </ul>
+          </div>
+          <div className="panel p-5">
+            <Pill tone="safe">{t.proofPill}</Pill>
+            <p className="mt-3 text-sm leading-relaxed text-ink-dim">
+              {t.proofBefore}
+              <a href="/dashboard" className="text-specter-soft underline-offset-4 hover:underline">
+                {t.proofLink}
+              </a>
+              {t.proofAfter}
+            </p>
           </div>
         </div>
       </Section>
