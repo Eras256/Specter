@@ -21,16 +21,12 @@ const COPY = {
     passwordPlaceholder: '••••••••',
     submitSignin: 'Iniciar sesión',
     submitSignup: 'Crear cuenta',
-    magicButton: 'Envíame un enlace mágico',
-    orDivider: 'o',
     busy: 'Procesando…',
     needsConfirm: 'Revisa tu correo para confirmar tu cuenta.',
-    magicSent: 'Te enviamos un enlace mágico — revisa tu correo.',
     disabledNote: 'El inicio de sesión necesita Supabase configurado (NEXT_PUBLIC_SUPABASE_URL).',
     signedInAs: (email: string) => `Has iniciado sesión como ${email}`,
     goDashboard: 'Ir al panel',
     signOut: 'Cerrar sesión',
-    emailRequired: 'Ingresa tu correo.',
   },
   en: {
     eyebrow: 'Account',
@@ -44,16 +40,12 @@ const COPY = {
     passwordPlaceholder: '••••••••',
     submitSignin: 'Sign in',
     submitSignup: 'Create account',
-    magicButton: 'Email me a magic link',
-    orDivider: 'or',
     busy: 'Working…',
     needsConfirm: 'Check your email to confirm your account.',
-    magicSent: 'Magic link sent — check your email.',
     disabledNote: 'Sign-in needs Supabase configured (NEXT_PUBLIC_SUPABASE_URL).',
     signedInAs: (email: string) => `You're signed in as ${email}`,
     goDashboard: 'Go to dashboard',
     signOut: 'Sign out',
-    emailRequired: 'Enter your email.',
   },
 } as const;
 
@@ -61,7 +53,7 @@ export default function LoginPage() {
   const { lang } = useLang();
   const t = COPY[lang];
   const router = useRouter();
-  const { user, enabled, signInPassword, signUpPassword, signInMagic, signOut } = useAuth();
+  const { user, enabled, signInPassword, signUpPassword, signOut } = useAuth();
 
   const [mode, setMode] = useState<Mode>('signin');
   const [email, setEmail] = useState<string>('');
@@ -96,27 +88,6 @@ export default function LoginPage() {
         } else {
           router.push('/dashboard');
         }
-      }
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const handleMagic = async () => {
-    if (!enabled || busy) return;
-    if (!email) {
-      setError(t.emailRequired);
-      return;
-    }
-    setBusy(true);
-    setError(null);
-    setNotice(null);
-    try {
-      const res = await signInMagic(email);
-      if (res.error) {
-        setError(res.error);
-      } else if (res.sent) {
-        setNotice(t.magicSent);
       }
     } finally {
       setBusy(false);
@@ -236,21 +207,6 @@ export default function LoginPage() {
                 {busy ? t.busy : mode === 'signin' ? t.submitSignin : t.submitSignup}
               </button>
             </form>
-
-            <div className="my-4 flex items-center gap-3 text-xs text-ink-faint">
-              <span className="h-px flex-1 bg-line" />
-              <span className="mono uppercase">{t.orDivider}</span>
-              <span className="h-px flex-1 bg-line" />
-            </div>
-
-            <button
-              type="button"
-              onClick={handleMagic}
-              disabled={!enabled || busy}
-              className="btn-ghost w-full"
-            >
-              {t.magicButton}
-            </button>
 
             {!enabled && (
               <p className="mt-5 text-center text-xs text-ink-faint">{t.disabledNote}</p>
