@@ -79,6 +79,16 @@ describe('POST /v1/evaluate', () => {
     const d = (await res.json()) as any;
     expect(d.decision).toBe('deny');
   });
+
+  it('returns 400 (not 500) on a malformed body', async () => {
+    // Passes the presence check but fails Zod deep in the engine (negative amount).
+    const res = await authed('/v1/evaluate', {
+      agentId: 'x',
+      sessionId: 'y',
+      action: { type: 'payment', amount: -5, rawInput: {} },
+    });
+    expect(res.status).toBe(400);
+  });
 });
 
 describe('Claude Code hook adapter — the gotcha', () => {

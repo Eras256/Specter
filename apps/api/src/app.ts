@@ -3,6 +3,7 @@ import { getStore } from '@specter/db';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
+import { ZodError } from 'zod';
 import { notifyIncident } from './alerts.js';
 import { classifyWithLlm } from './detector.js';
 import {
@@ -66,6 +67,18 @@ export function createApp() {
   const app = new Hono<Vars>();
   app.use('*', logger());
   app.use('*', cors());
+
+  // A malformed request body fails Zod validation deep in the engine; surface it
+  // as 400, not 500. Any other uncaught error is a genuine internal fault → 500.
+  // (The Claude Code hook catches its own errors and always returns 200, so this
+  // never changes that contract.)
+  app.onError((err, c) => {
+    if (err instanceof ZodError) {
+      return c.json({ error: 'invalid request body', details: err.issues }, 400);
+    }
+    console.error('[specter] unhandled error:', err);
+    return c.json({ error: 'internal error' }, 500);
+  });
 
   app.get('/health', (c) => c.json({ status: 'ok', ts: Date.now() }));
 
