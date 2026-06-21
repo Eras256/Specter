@@ -125,6 +125,7 @@ export async function POST(req: Request): Promise<Response> {
       reason: string;
       riskScore: number;
       audit?: { seq: number; hash: string };
+      signalDetail?: Array<{ id: string; score: number; verdict: string }>;
     };
     return Response.json({
       scenario,
@@ -137,6 +138,7 @@ export async function POST(req: Request): Promise<Response> {
       reason: d.reason,
       riskScore: d.riskScore,
       audit: d.audit,
+      signalDetail: d.signalDetail,
     });
   } catch {
     return Response.json({ error: 'decision failed' }, { status: 502 });

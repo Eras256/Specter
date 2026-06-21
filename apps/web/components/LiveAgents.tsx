@@ -21,6 +21,7 @@ interface AgentResult {
   scraped: { chars: number; sourceRef: string };
   fintual?: { fund: string; nav: number; units: number; value: number; date: string };
   audit?: { seq: number; hash: string };
+  signalDetail?: Array<{ id: string; score: number; verdict: string }>;
 }
 
 type Phase = 'idle' | 'loading' | 'reading' | 'reveal' | 'done';
@@ -49,6 +50,14 @@ const COPY = {
     proofLabel: 'prueba',
     verify: 'verificar',
     narrate: '🔊 Narrar',
+    signalsTitle: 'por qué',
+    sigLabels: {
+      provenance: 'Procedencia',
+      policy: 'Tus reglas',
+      consistency: 'Coherencia',
+      llm: 'IA (Claude)',
+      destructive: 'Reglas duras',
+    } as Record<string, string>,
     foot: 'Esto es real: Firecrawl scrapea la página de verdad y la decisión la toma el API de Specter en Fly. Cada decisión queda en un registro inalterable. La animación muestra lo que el agente hace.',
     verdict: {
       deny: 'BLOQUEADO',
@@ -80,6 +89,14 @@ const COPY = {
     proofLabel: 'proof',
     verify: 'verify',
     narrate: '🔊 Narrate',
+    signalsTitle: 'why',
+    sigLabels: {
+      provenance: 'Provenance',
+      policy: 'Your rules',
+      consistency: 'Consistency',
+      llm: 'AI (Claude)',
+      destructive: 'Hard rules',
+    } as Record<string, string>,
     foot: "This is real: Firecrawl actually scrapes the page and Specter's API on Fly makes the call. Every decision lands in a tamper-evident record. The animation shows what the agent does.",
     verdict: {
       deny: 'BLOCKED',
@@ -579,6 +596,32 @@ function Verdict({
             </div>
           )}
           <div className="text-xs text-ink-dim">{result.reason}</div>
+          {result.signalDetail && result.signalDetail.length > 0 && (
+            <div className="mt-3 space-y-1.5">
+              <div className="mono text-[10px] uppercase tracking-wider text-ink-faint">
+                {t.signalsTitle}
+              </div>
+              {result.signalDetail.map((s) => {
+                const color = s.score >= 0.66 ? '#f87171' : s.score >= 0.33 ? '#fbbf24' : '#34d399';
+                return (
+                  <div key={s.id} className="flex items-center gap-2" title={s.verdict}>
+                    <span className="mono w-[76px] shrink-0 text-[10px] text-ink-dim">
+                      {t.sigLabels[s.id] ?? s.id}
+                    </span>
+                    <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-line/40">
+                      <div
+                        className="h-full rounded-full"
+                        style={{ width: `${Math.round(s.score * 100)}%`, backgroundColor: color }}
+                      />
+                    </div>
+                    <span className="mono w-[28px] shrink-0 text-right text-[10px] text-ink-faint">
+                      {s.score.toFixed(2)}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
     </div>
