@@ -21,7 +21,7 @@ const COPY = {
     notificationEmailPlaceholder: 'you@company.com',
     dictate: 'Política por voz',
     dictateHint:
-      'Habla tu regla (ej. "bloquea pagos sobre 500 a destinos nuevos") y la transcribimos a tu política.',
+      'Habla tu regla (ej. "bloquea pagos sobre 500" o "agrega Fintual a los aprobados") y la transcribimos a tu política.',
     dictateBtn: '🎙️ Dictar',
     stop: '⏹ Detener',
     transcribing: 'transcribiendo…',
@@ -46,7 +46,7 @@ const COPY = {
     notificationEmailPlaceholder: 'you@company.com',
     dictate: 'Voice policy',
     dictateHint:
-      'Speak your rule (e.g. "block payments over 500 to new destinations") and we transcribe it into your policy.',
+      'Speak your rule (e.g. "block payments over 500" or "add Fintual to approved") and we transcribe it into your policy.',
     dictateBtn: '🎙️ Dictate',
     stop: '⏹ Stop',
     transcribing: 'transcribing…',
@@ -144,6 +144,19 @@ function parseAmount(text: string): number | null {
   return matched && n >= 10 ? n : null;
 }
 
+// Known merchants we can recognize in a spoken rule ("agrega Fintual a los aprobados").
+const KNOWN_MERCHANTS: Array<[string, RegExp]> = [
+  ['Amazon México', /\bamazon\b/i],
+  ['Mercado Libre', /mercado\s*libre/i],
+  ['Spotify', /spotify/i],
+  ['Fintual', /fintual/i],
+  ['Uber', /\buber\b/i],
+  ['Netflix', /netflix/i],
+  ['Apple México', /\bapple\b/i],
+  ['Rappi', /rappi/i],
+  ['CFE', /\bcfe\b|comisi[oó]n federal/i],
+];
+
 /**
  * The control plane — deliberately low-friction (3–4 fields). 60-second setup is
  * a feature. Writes to Supabase in production; here it shows the resulting policy
@@ -178,6 +191,26 @@ export function PolicyWizard({ embedded = false }: { embedded?: boolean }) {
       setApproveNew(false);
     } else if (/(aprob|approv|nuevo|new|desconoc|unknown|requ)/.test(lower)) {
       setApproveNew(true);
+    }
+    // "agrega/añade/aprueba/permite <comercio>" → add recognized merchants to the list.
+    if (/(agreg|a[ñn]ad|aprob|aprueb|permit|approve|\badd\b|allow)/i.test(lower)) {
+      const found = KNOWN_MERCHANTS.filter(([, re]) => re.test(text)).map(([name]) => name);
+      if (found.length) {
+        setMerchants((prev) => {
+          const have = new Set(
+            prev
+              .split(',')
+              .map((s) => s.trim().toLowerCase())
+              .filter(Boolean),
+          );
+          const current = prev
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean);
+          const additions = found.filter((m) => !have.has(m.toLowerCase()));
+          return additions.length ? [...current, ...additions].join(', ') : prev;
+        });
+      }
     }
   };
 
