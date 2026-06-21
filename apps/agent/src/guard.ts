@@ -14,7 +14,7 @@ import { Guard } from '@specter/sdk';
 const DEMO_POLICY: Policy = {
   perTxCap: 500,
   monthlyCap: 5000,
-  allowlist: ['Acme Store', 'acct_acme_store', 'CloudHost Inc', 'acct_cloudhost'],
+  allowlist: ['Amazon México', 'acct_amazon_mx', 'Fintual', 'acct_tu_banco'],
   allowedCategories: [],
   requireApprovalOnNewDestination: true,
   notificationEmail: undefined,
@@ -49,7 +49,7 @@ export async function guardCheck(
   const input: EvaluateInput = {
     ...base,
     policy: DEMO_POLICY,
-    state: { spentThisMonth: 100, paymentsInWindow: 1, knownDestinations: ['acct_acme_store'] },
+    state: { spentThisMonth: 100, paymentsInWindow: 1, knownDestinations: ['acct_amazon_mx'] },
   };
   const result = await evaluateAction(input, { llmClassifier: classifyHeuristic });
   return { via: 'in-process', result };

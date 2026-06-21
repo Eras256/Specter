@@ -1,15 +1,15 @@
 // Fintual adapter — models an AI agent that manages your investment portfolio.
 //
 // readPortfolio() pulls REAL data from Fintual's public API (the live NAV of the
-// "Risky Norris" fund) so the demo is grounded in real numbers; on any failure it
-// falls back to a static value so it still runs offline.
+// Mexican PPR fund "Risky Hayek") so the demo is grounded in real numbers; on any
+// failure it falls back to a static value so it still runs offline.
 //
 // requestWithdrawal() is a MOCK — it never moves real money. A production build
 // would call Fintual's authenticated withdrawal endpoint with the user's token;
 // the point here is that the *decision* to move money runs through Specter first.
 
 const FINTUAL_API = process.env.FINTUAL_API_URL || 'https://fintual.cl/api';
-const RISKY_NORRIS = 36; // conceptual_asset_id of Fintual's flagship fund
+const RISKY_HAYEK = 2904; // conceptual_asset_id of Fintual México's PPR fund (MXN)
 
 export interface Portfolio {
   fund: string;
@@ -21,9 +21,9 @@ export interface Portfolio {
 }
 
 export async function readPortfolio(): Promise<Portfolio> {
-  const units = 124.86; // the user's holdings (demo)
+  const units = 62_000; // the user's PPR holdings (demo)
   try {
-    const res = await fetch(`${FINTUAL_API}/real_assets?conceptual_asset_id=${RISKY_NORRIS}`, {
+    const res = await fetch(`${FINTUAL_API}/real_assets?conceptual_asset_id=${RISKY_HAYEK}`, {
       signal: AbortSignal.timeout(8000),
     });
     if (res.ok) {
@@ -34,25 +34,25 @@ export async function readPortfolio(): Promise<Portfolio> {
       const nav = attr?.last_day?.net_asset_value;
       if (nav) {
         return {
-          fund: attr?.name ?? 'Risky Norris',
+          fund: attr?.name ?? 'Risky Hayek',
           nav,
           units,
           value: Math.round(nav * units),
-          currency: 'CLP',
-          sourceRef: `fintual:real_assets/${RISKY_NORRIS}`,
+          currency: 'MXN',
+          sourceRef: `fintual:real_assets/${RISKY_HAYEK}`,
         };
       }
     }
   } catch {
     /* fall through to the offline-safe value */
   }
-  const nav = 4037.04;
+  const nav = 1.680406;
   return {
-    fund: 'Risky Norris',
+    fund: 'Risky Hayek',
     nav,
     units,
     value: Math.round(nav * units),
-    currency: 'CLP',
+    currency: 'MXN',
     sourceRef: 'fintual:fixture',
   };
 }

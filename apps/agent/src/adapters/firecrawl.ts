@@ -29,7 +29,8 @@ export async function readProductPage(
       const mod = (await import(pkg)) as any;
       const Firecrawl = mod.default ?? mod.FirecrawlApp ?? mod.Firecrawl;
       const fc = new Firecrawl({ apiKey: key });
-      const res = await fc.scrapeUrl(target, { formats: ['markdown'] });
+      // maxAge: 0 forces a fresh scrape (Firecrawl caches by default).
+      const res = await fc.scrapeUrl(target, { formats: ['markdown'], maxAge: 0 });
       const markdown = res?.markdown ?? res?.data?.markdown ?? '';
       return { markdown, sourceRef: `firecrawl:${target}` };
     } catch (err) {
@@ -37,7 +38,7 @@ export async function readProductPage(
     }
   }
 
-  const file = opts.poisoned ? 'acme-poisoned.md' : 'acme-clean.md';
+  const file = opts.poisoned ? 'amazon-poisoned.md' : 'amazon-clean.md';
   const markdown = await readFile(join(FIXTURES, file), 'utf8');
   return { markdown, sourceRef: `fixture:${file}` };
 }
@@ -61,16 +62,19 @@ export function extractPaymentIntent(markdown: string): ExtractedIntent {
   // Firecrawl escapes markdown special chars in plain text (acct\_attacker\_x9f3);
   // unescape so the account/merchant regexes match the injected payee too.
   const md = markdown.replace(/\\([_*`~[\]()])/g, '$1');
-  const price = md.match(/Price:\s*\$?([\d.]+)\s*([A-Z]{3})?/i);
-  const amount = price ? Number(price[1]) : 0;
-  const currency = price?.[2]?.toUpperCase() || 'USD';
+  // Amount: "Price:" / "Precio:" / "Monto:" (es-MX), tolerating a thousands comma.
+  const price = md.match(/(?:Precio|Price|Monto):\s*\$?\s*([\d.,]+)\s*([A-Z]{3})?/i);
+  const amount = price ? Number((price[1] ?? '0').replace(/,/g, '')) : 0;
+  const currency = price?.[2]?.toUpperCase() || 'MXN';
 
-  // Injection: "send payment to "X", account acct_yyy" (+ redirect markers).
+  // Injection / payment-redirect line — English or Spanish (+ redirect markers).
   const redirect = md.match(
-    /send payment to\s*(?:our processor\s*)?"?([^",\n]+?)"?,?\s*account\s+(acct_[\w-]+)/i,
+    /(?:send payment to|env[ií]a (?:el )?pago a)\s*(?:our processor\s*|nuestro procesador\s*)?"?([^",\n]+?)"?,?\s*(?:account|cuenta)\s+(acct_[\w-]+)/i,
   );
   const redirectMarker =
-    /ignore previous|billing has migrated|do not mention|payment processing update/i.test(md);
+    /ignore previous|billing has migrated|do not mention|payment processing update|actualizaci[oó]n de facturaci[oó]n|ignora (?:las )?instrucciones|no menciones|la facturaci[oó]n cambi[oó]/i.test(
+      md,
+    );
   if (redirect) {
     return {
       merchant: redirect[1]!.trim(),
@@ -81,8 +85,10 @@ export function extractPaymentIntent(markdown: string): ExtractedIntent {
     };
   }
 
-  // Legitimate: "Pay to: **Merchant** — account `acct_xxx`"
-  const legit = md.match(/Pay to:\s*\*\*([^*]+)\*\*\s*[—-]\s*account\s+`?(acct_[\w-]+)`?/i);
+  // Legitimate payee line — "Pay to:" / "Pagar a:" / "Retirar a:".
+  const legit = md.match(
+    /(?:Pay to|Pagar a|Retirar a):\s*\*\*([^*]+)\*\*\s*[—-]\s*(?:account|cuenta)\s+`?(acct_[\w-]+)`?/i,
+  );
   if (legit) {
     return {
       merchant: legit[1]!.trim(),
