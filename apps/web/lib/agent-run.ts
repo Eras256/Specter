@@ -9,15 +9,18 @@ export interface FintualNav {
   fund: string;
   nav: number;
   units: number;
-  value: number; // CLP
+  value: number; // MXN
   date: string;
 }
 
-/** Real, live NAV of Fintual's "Risky Norris" fund via their public API (no auth). */
+/**
+ * Real, live NAV of Fintual México's "Risky Hayek" fund (the PPR fund) via their
+ * public API (no auth). conceptual_asset_id=2904 is the MXN-denominated fund.
+ */
 export async function fetchFintualNav(): Promise<FintualNav> {
-  const units = 124.86; // demo holdings (we don't have the user's real account)
+  const units = 62_000; // demo PPR holding (we don't have the user's real account)
   try {
-    const res = await fetch(`${FINTUAL_API}/real_assets?conceptual_asset_id=36`, {
+    const res = await fetch(`${FINTUAL_API}/real_assets?conceptual_asset_id=2904`, {
       signal: AbortSignal.timeout(8000),
     });
     if (res.ok) {
@@ -30,7 +33,7 @@ export async function fetchFintualNav(): Promise<FintualNav> {
       const nav = a?.last_day?.net_asset_value;
       if (nav) {
         return {
-          fund: a?.name ?? 'Risky Norris',
+          fund: a?.name ?? 'Risky Hayek',
           nav,
           units,
           value: Math.round(nav * units),
@@ -41,8 +44,8 @@ export async function fetchFintualNav(): Promise<FintualNav> {
   } catch {
     /* fall through to offline-safe value */
   }
-  const nav = 4037.04;
-  return { fund: 'Risky Norris', nav, units, value: Math.round(nav * units), date: '' };
+  const nav = 1.680406;
+  return { fund: 'Risky Hayek', nav, units, value: Math.round(nav * units), date: '' };
 }
 
 /** Real Firecrawl scrape → markdown. Throws if the key is missing or it fails. */
@@ -52,7 +55,9 @@ export async function scrapeMarkdown(url: string): Promise<string> {
   const res = await fetch(FIRECRAWL_SCRAPE, {
     method: 'POST',
     headers: { authorization: `Bearer ${key}`, 'content-type': 'application/json' },
-    body: JSON.stringify({ url, formats: ['markdown'] }),
+    // maxAge: 0 forces a fresh scrape — Firecrawl caches by default, which would
+    // otherwise serve a stale version of our demo page after we update it.
+    body: JSON.stringify({ url, formats: ['markdown'], maxAge: 0 }),
     signal: AbortSignal.timeout(20000),
   });
   if (!res.ok) throw new Error(`firecrawl ${res.status}`);
@@ -79,15 +84,19 @@ export function extractPaymentIntent(markdown: string): PaymentIntent {
   // Firecrawl escapes markdown special chars in plain text (e.g. acct\_attacker\_x9f3);
   // unescape so the account/merchant regexes match the injected payee too.
   const md = markdown.replace(/\\([_*`~[\]()])/g, '$1');
-  const price = md.match(/Price:\s*\$?([\d.]+)\s*([A-Z]{3})?/i);
-  const amount = price ? Number(price[1]) : 0;
-  const currency = price?.[2]?.toUpperCase() || 'USD';
+  // Amount: matches "Price:" / "Precio:" / "Monto:" (es-MX), tolerating a thousands comma.
+  const price = md.match(/(?:Precio|Price|Monto):\s*\$?\s*([\d.,]+)\s*([A-Z]{3})?/i);
+  const amount = price ? Number((price[1] ?? '0').replace(/,/g, '')) : 0;
+  const currency = price?.[2]?.toUpperCase() || 'MXN';
 
+  // The injection / payment-redirect line — English or Spanish.
   const redirect = md.match(
-    /send payment to\s*(?:our processor\s*)?"?([^",\n]+?)"?,?\s*account\s+(acct_[\w-]+)/i,
+    /(?:send payment to|env[ií]a (?:el )?pago a)\s*(?:our processor\s*|nuestro procesador\s*)?"?([^",\n]+?)"?,?\s*(?:account|cuenta)\s+(acct_[\w-]+)/i,
   );
   const redirectMarker =
-    /ignore previous|billing has migrated|do not mention|payment processing update/i.test(md);
+    /ignore previous|billing has migrated|do not mention|payment processing update|actualizaci[oó]n de facturaci[oó]n|ignora (?:las )?instrucciones|no menciones|la facturaci[oó]n cambi[oó]/i.test(
+      md,
+    );
   if (redirect) {
     return {
       merchant: redirect[1]?.trim() ?? 'Unknown',
@@ -98,7 +107,10 @@ export function extractPaymentIntent(markdown: string): PaymentIntent {
     };
   }
 
-  const legit = md.match(/Pay to:\s*\*\*([^*]+)\*\*\s*[—-]\s*account\s+`?(acct_[\w-]+)`?/i);
+  // The legitimate payee line — "Pay to:" / "Pagar a:" / "Retirar a:".
+  const legit = md.match(
+    /(?:Pay to|Pagar a|Retirar a):\s*\*\*([^*]+)\*\*\s*[—-]\s*(?:account|cuenta)\s+`?(acct_[\w-]+)`?/i,
+  );
   if (legit) {
     return {
       merchant: legit[1]?.trim() ?? 'Unknown',

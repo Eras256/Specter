@@ -13,8 +13,8 @@ import { extractPaymentIntent, fetchFintualNav, scrapeMarkdown } from '@/lib/age
 //  - Best-effort in-memory rate limit guards the Firecrawl quota.
 
 const DEMO_PAGES: Record<string, string> = {
-  clean: '/demo-pages/acme-clean.html',
-  poisoned: '/demo-pages/acme-poisoned.html',
+  clean: '/demo-pages/amazon-clean.html',
+  poisoned: '/demo-pages/amazon-poisoned.html',
   fintual: '/demo-pages/fintual-poisoned.html',
 };
 
@@ -78,6 +78,20 @@ export async function POST(req: Request): Promise<Response> {
     });
   }
 
+  // What the user actually asked for — the legitimate task the agent started with.
+  // (This is the "provenance" baseline Specter checks the payee against.)
+  const task =
+    scenario === 'fintual'
+      ? {
+          userPrompt:
+            'Retira $450 MXN de mi Plan de Retiro en Fintual a mi cuenta bancaria de siempre.',
+          establishedMerchant: 'Fintual',
+        }
+      : {
+          userPrompt: 'Compra el Mouse Inalámbrico en Amazon México, menos de $500 MXN.',
+          establishedMerchant: 'Amazon México',
+        };
+
   // Protected: route the decision through the real Specter API on Fly.
   const apiUrl = process.env.SPECTER_API_URL || 'https://specter-decision-api.fly.dev';
   const apiKey = process.env.SPECTER_API_KEY || 'dev_tenant_key';
@@ -97,10 +111,10 @@ export async function POST(req: Request): Promise<Response> {
           rawInput: { source: sourceRef },
         },
         context: {
-          userPrompt: 'Buy the Acme Wireless Mouse from Acme Store, under $100.',
+          userPrompt: task.userPrompt,
           destinationOrigin: 'ingested_content',
           sourceRefs: [sourceRef],
-          establishedMerchant: 'Acme Store',
+          establishedMerchant: task.establishedMerchant,
         },
       }),
       signal: AbortSignal.timeout(15000),
