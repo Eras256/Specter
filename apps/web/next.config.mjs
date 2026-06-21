@@ -8,7 +8,9 @@ const securityHeaders = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+  // microphone=(self) so the voice-policy dictation (STT) works on our own pages;
+  // camera/geolocation stay fully disabled. (microphone=() blocked it everywhere.)
+  { key: 'Permissions-Policy', value: 'camera=(), microphone=(self), geolocation=()' },
   { key: 'X-DNS-Prefetch-Control', value: 'on' },
 ];
 
