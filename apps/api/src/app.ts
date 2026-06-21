@@ -25,6 +25,8 @@ export interface EvaluateAndRecordResult {
   result: DecisionResult;
   /** The tamper-evident chain row this decision was written to (seq + hash). */
   audit: { seq: number; hash: string };
+  /** Deterministic gate latency in ms — the <0.5s path; excludes the LLM second opinion. */
+  coreMs: number;
 }
 
 export async function evaluateAndRecord(
@@ -35,6 +37,13 @@ export async function evaluateAndRecord(
   const policy = await store.getPolicy(tenant.tenantId);
   const state = await store.getRuntimeState(tenant.tenantId, base.agentId);
   const input: EvaluateInput = { ...base, policy, state };
+
+  // Time the deterministic gate (provenance + hard rules + policy + consistency) —
+  // the <0.5s path that actually blocks the payment. The LLM is a slower second
+  // opinion (one more signal), deliberately off this critical path.
+  const t0 = Date.now();
+  await evaluateAction(input);
+  const coreMs = Date.now() - t0;
 
   const result = await evaluateAction(input, { llmClassifier: classifyWithLlm });
 
@@ -65,7 +74,7 @@ export async function evaluateAndRecord(
       notificationEmail: policy.notificationEmail,
     });
   }
-  return { result, audit: { seq: recorded.audit.seq, hash: recorded.audit.hash } };
+  return { result, audit: { seq: recorded.audit.seq, hash: recorded.audit.hash }, coreMs };
 }
 
 export function createApp() {
@@ -120,8 +129,8 @@ export function createApp() {
       action: body.action,
       context: body.context ?? { userPrompt: '', destinationOrigin: 'unknown', sourceRefs: [] },
     };
-    const { result, audit } = await evaluateAndRecord(getTenant(c), base);
-    return c.json({ ...result, audit });
+    const { result, audit, coreMs } = await evaluateAndRecord(getTenant(c), base);
+    return c.json({ ...result, audit, coreMs });
   });
 
   v1.get('/audit', async (c) => {
