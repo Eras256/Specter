@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLang } from '@/lib/i18n';
-import { playAlert } from '@/lib/voice';
+import { playAlert, speak } from '@/lib/voice';
 
 interface AgentResult {
   protection: boolean;
@@ -48,6 +48,7 @@ const COPY = {
     risk: 'riesgo',
     proofLabel: 'prueba',
     verify: 'verificar',
+    narrate: '🔊 Narrar',
     foot: 'Esto es real: Firecrawl scrapea la página de verdad y la decisión la toma el API de Specter en Fly. Cada decisión queda en un registro inalterable. La animación muestra lo que el agente hace.',
     verdict: {
       deny: 'BLOQUEADO',
@@ -78,6 +79,7 @@ const COPY = {
     risk: 'risk',
     proofLabel: 'proof',
     verify: 'verify',
+    narrate: '🔊 Narrate',
     foot: "This is real: Firecrawl actually scrapes the page and Specter's API on Fly makes the call. Every decision lands in a tamper-evident record. The animation shows what the agent does.",
     verdict: {
       deny: 'BLOCKED',
@@ -93,6 +95,40 @@ const COPY = {
     } as Record<string, string>,
   },
 } as const;
+
+/** Spoken walkthrough of what just happened — read aloud via ElevenLabs. */
+function buildNarration(
+  lang: 'es' | 'en',
+  variant: 'shopping' | 'fintual',
+  r: AgentResult | null,
+): string {
+  const ex = r?.extracted;
+  const money = ex ? `${ex.currency} ${ex.amount}` : '';
+  const merchant = ex?.merchant ?? 'una cuenta desconocida';
+  const decision = r?.decision ?? 'deny';
+  if (lang === 'es') {
+    const site =
+      variant === 'fintual'
+        ? 'tu Plan de Retiro en Fintual'
+        : 'la página de producto de Amazon México';
+    const verdict =
+      decision === 'review'
+        ? 'lo retuvo para que una persona lo apruebe'
+        : decision === 'allow'
+          ? 'lo dejó pasar'
+          : 'bloqueó el pago antes de que se moviera: cero dinero perdido';
+    return `El agente abrió ${site} y encontró una instrucción oculta en la página que intentaba redirigir el pago de ${money} a la cuenta de un atacante, ${merchant}. Specter detectó que ese destinatario salió del contenido que el agente leyó, no de tu pedido, y ${verdict}. Sin protección, el agente le habría pagado al atacante.`;
+  }
+  const site =
+    variant === 'fintual' ? 'your Fintual retirement plan' : 'the Amazon México product page';
+  const verdict =
+    decision === 'review'
+      ? 'held it for a human to approve'
+      : decision === 'allow'
+        ? 'let it through'
+        : 'blocked the payment before any money moved — zero lost';
+  return `The agent opened ${site} and found a hidden instruction that tried to redirect the ${money} payment to an attacker's account, ${merchant}. Specter saw the payee came from the content the agent read, not from your request, and ${verdict}. Without protection, the agent would have paid the attacker.`;
+}
 
 export function LiveAgents({
   variant = 'shopping',
@@ -114,12 +150,14 @@ export function LiveAgents({
   const contentRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number | null>(null);
   const startRef = useRef(0);
+  const narratedRef = useRef(false);
 
   const revealed = phase === 'reveal' || phase === 'done';
 
   const run = () => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     setError(null);
+    narratedRef.current = false;
     setProtectedRun(null);
     setUnprotectedRun(null);
     setProgress(0);
@@ -172,6 +210,14 @@ export function LiveAgents({
   const running = phase !== 'idle' && phase !== 'done';
   const ex = protectedRun?.extracted ?? unprotectedRun?.extracted;
   const navHint = protectedRun?.fintual?.nav ?? unprotectedRun?.fintual?.nav;
+
+  // Speak the walkthrough once the verdict lands (after the alert sound, on 'done').
+  useEffect(() => {
+    if (phase === 'done' && protectedRun && !narratedRef.current) {
+      narratedRef.current = true;
+      speak(buildNarration(lang, variant, protectedRun), lang);
+    }
+  }, [phase, protectedRun, lang, variant]);
 
   return (
     <div className="space-y-4">
@@ -272,6 +318,15 @@ export function LiveAgents({
             <Verdict title={t.protectedTitle} tone="specter" result={protectedRun} t={t} />
             <Verdict title={t.unprotectedTitle} tone="block" result={unprotectedRun} t={t} />
           </div>
+          {protectedRun && (
+            <button
+              type="button"
+              onClick={() => speak(buildNarration(lang, variant, protectedRun), lang)}
+              className="btn-ghost px-3 py-1.5 text-sm"
+            >
+              {t.narrate}
+            </button>
+          )}
         </div>
       )}
 
