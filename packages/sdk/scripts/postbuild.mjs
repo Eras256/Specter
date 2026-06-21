@@ -22,6 +22,7 @@ const manifest = {
       import: { types: './index.d.ts', default: './index.js' },
       require: { types: './index.d.cts', default: './index.cjs' },
     },
+    './package.json': './package.json',
   },
   sideEffects: false,
   license: 'MIT',
