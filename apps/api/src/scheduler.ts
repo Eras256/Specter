@@ -18,64 +18,94 @@ import { evaluateAndRecord } from './app.js';
 
 type Round = Omit<EvaluateInput, 'policy' | 'state'>;
 
+/** A clean, allowlisted MX payment the user asked for → ALLOW. */
+function clean(
+  agentId: string,
+  merchant: string,
+  account: string,
+  amount: number,
+  what: string,
+): Round {
+  return {
+    agentId,
+    sessionId: 'round_clean',
+    action: {
+      type: 'payment',
+      amount,
+      currency: 'MXN',
+      destination: account,
+      merchantClaimed: merchant,
+      rawInput: { source: 'user' },
+    },
+    context: {
+      userPrompt: what,
+      destinationOrigin: 'user_prompt',
+      sourceRefs: [],
+      establishedMerchant: merchant,
+    },
+  };
+}
+
+// Realistic always-on traffic: mostly legit MX payments (ALLOW), interleaved with
+// an injected hijack (DENY), a brand-new payee (REVIEW) and a destructive op
+// (DENY) — so the live feed reflects "most pass, the bad ones get caught".
 const ROUNDS: Round[] = [
-  // 1) Hijacked payee from a poisoned page → DENY (provenance is the moat).
+  clean(
+    'shop-agent-24x7',
+    'Amazon Mexico',
+    'acct_amazon_mx',
+    449.0,
+    'Compra el mouse inalámbrico en Amazon México.',
+  ),
+  clean(
+    'shop-agent-24x7',
+    'Mercado Libre',
+    'acct_mercadolibre',
+    312.5,
+    'Paga el pedido en Mercado Libre.',
+  ),
+  // Hijacked payee from a poisoned page → DENY (provenance is the moat).
   {
     agentId: 'shop-agent-24x7',
     sessionId: 'round_hijack',
     action: {
       type: 'payment',
-      amount: 129.99,
-      currency: 'USD',
-      destination: 'acct_attacker_9f3a',
+      amount: 449.0,
+      currency: 'MXN',
+      destination: 'acct_attacker_x9f3',
       merchantClaimed: 'Global Pay Solutions',
-      rawInput: { source: 'firecrawl:/demo-pages/acme-poisoned.html' },
+      rawInput: { source: 'firecrawl:/demo-pages/amazon-poisoned.html' },
     },
     context: {
-      userPrompt: 'Buy the Acme Wireless Mouse from Acme Store, under $100.',
+      userPrompt: 'Compra el mouse inalámbrico en Amazon México.',
       destinationOrigin: 'ingested_content',
-      sourceRefs: ['firecrawl:/demo-pages/acme-poisoned.html'],
-      establishedMerchant: 'Acme Store',
+      sourceRefs: ['firecrawl:/demo-pages/amazon-poisoned.html'],
+      establishedMerchant: 'Amazon Mexico',
     },
   },
-  // 2) Legit, allowlisted payee the user asked for → ALLOW.
-  {
-    agentId: 'shop-agent-24x7',
-    sessionId: 'round_clean',
-    action: {
-      type: 'payment',
-      amount: 79.99,
-      currency: 'USD',
-      destination: 'acct_acme_store',
-      merchantClaimed: 'Acme Store',
-      rawInput: { source: 'user' },
-    },
-    context: {
-      userPrompt: 'Pay Acme Store $79.99 for the wireless mouse.',
-      destinationOrigin: 'user_prompt',
-      sourceRefs: [],
-      establishedMerchant: 'Acme Store',
-    },
-  },
-  // 3) Brand-new payee, clean provenance, under cap → REVIEW (ask a human).
+  clean('finance-24x7', 'Spotify', 'acct_spotify_mx', 115.0, 'Renueva la suscripción de Spotify.'),
+  clean('ops-runner-24x7', 'CFE', 'acct_cfe_mx', 420.0, 'Paga el recibo de luz de CFE.'),
+  // Brand-new payee, clean provenance, under cap → REVIEW (ask a human first).
   {
     agentId: 'procurement-24x7',
     sessionId: 'round_review',
     action: {
       type: 'payment',
-      amount: 240,
-      currency: 'USD',
-      destination: 'acct_new_vendor_q2',
-      merchantClaimed: 'Northwind SaaS',
+      amount: 380,
+      currency: 'MXN',
+      destination: 'acct_nuevo_proveedor',
+      merchantClaimed: 'Proveedor Nuevo SA',
       rawInput: { source: 'user' },
     },
     context: {
-      userPrompt: 'Set up the Northwind SaaS subscription.',
+      userPrompt: 'Da de alta el pago al nuevo proveedor.',
       destinationOrigin: 'user_prompt',
       sourceRefs: [],
     },
   },
-  // 4) Destructive, irreversible op → DENY (hard rule, before any AI).
+  clean('shop-agent-24x7', 'Uber', 'acct_uber_mx', 189.0, 'Paga el viaje de Uber.'),
+  clean('finance-24x7', 'Netflix', 'acct_netflix_mx', 219.0, 'Renueva la suscripción de Netflix.'),
+  // Destructive, irreversible op → DENY (hard rule, before any AI).
   {
     agentId: 'ops-runner-24x7',
     sessionId: 'round_destructive',
@@ -86,11 +116,12 @@ const ROUNDS: Round[] = [
       rawInput: { source: 'agent' },
     },
     context: {
-      userPrompt: 'Clean up old test data.',
+      userPrompt: 'Limpia datos viejos de prueba.',
       destinationOrigin: 'tool_output',
       sourceRefs: [],
     },
   },
+  clean('shop-agent-24x7', 'Rappi', 'acct_rappi_mx', 260.0, 'Paga el pedido de Rappi.'),
 ];
 
 /**
