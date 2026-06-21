@@ -2,6 +2,7 @@
 
 import { AuditTrail } from '@/components/dashboard/AuditTrail';
 import { LiveAgents } from '@/components/LiveAgents';
+import { LiveLedger } from '@/components/LiveLedger';
 import { PolicyWizard } from '@/components/PolicyWizard';
 import { Pill, Section, SectionHead } from '@/components/ui';
 import { useLang } from '@/lib/i18n';
@@ -44,6 +45,11 @@ const COPY = {
     fintualNote:
       'Mismo monto en ambos casos — lo único que cambia es de dónde vino el destino. Por eso Specter atrapa el secuestro aunque el monto esté dentro de tus límites.',
 
+    feedEyebrow: 'En vivo · 24/7',
+    feedTitle: 'Todas las decisiones, en tiempo real',
+    feedSub:
+      'Cada decisión —los agentes autónomos corriendo 24/7 y las que disparas tú aquí— aparece en este feed con su hash, en vivo.',
+
     proofStepEyebrow: 'Paso 4 · La prueba',
     proofStepTitle: 'Cada decisión deja prueba que puedes verificar',
     proofStepSub:
@@ -85,6 +91,11 @@ const COPY = {
     fintualNotePill: 'The moat',
     fintualNote:
       'Same amount in both runs — the only thing that changes is where the destination came from. That is why Specter catches the hijack even when the amount is within your limits.',
+
+    feedEyebrow: 'Live · 24/7',
+    feedTitle: 'Every decision, in real time',
+    feedSub:
+      'Every decision — the autonomous agents running 24/7 and the ones you trigger here — shows up in this feed with its hash, live.',
 
     proofStepEyebrow: 'Step 4 · The proof',
     proofStepTitle: 'Every decision leaves proof you can verify',
@@ -149,6 +160,14 @@ export default function DemoPage() {
               {t.proofAfter}
             </p>
           </div>
+        </div>
+      </Section>
+
+      {/* Live 24/7 feed — every decision (autonomous agents + your runs) */}
+      <Section className="!pt-2 !pb-8">
+        <SectionHead eyebrow={t.feedEyebrow} title={t.feedTitle} sub={t.feedSub} />
+        <div className="mt-6">
+          <LiveLedger />
         </div>
       </Section>
 
