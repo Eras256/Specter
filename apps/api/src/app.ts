@@ -5,8 +5,8 @@ import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { ZodError } from 'zod';
 import { notifyIncident, parseWhatsAppAction, sendWhatsAppText } from './alerts.js';
-import { env } from './env.js';
 import { classifyWithLlm } from './detector.js';
+import { env } from './env.js';
 import {
   type ClaudeCodeHookPayload,
   decisionToHookResponse,
