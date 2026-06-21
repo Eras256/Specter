@@ -96,6 +96,7 @@ export async function POST(req: Request): Promise<Response> {
   const apiUrl = process.env.SPECTER_API_URL || 'https://specter-decision-api.fly.dev';
   const apiKey = process.env.SPECTER_API_KEY || 'dev_tenant_key';
   try {
+    const t0 = Date.now();
     const res = await fetch(`${apiUrl}/v1/evaluate`, {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'x-api-key': apiKey },
@@ -127,6 +128,7 @@ export async function POST(req: Request): Promise<Response> {
       audit?: { seq: number; hash: string };
       signalDetail?: Array<{ id: string; score: number; verdict: string }>;
     };
+    const ms = Date.now() - t0;
     return Response.json({
       scenario,
       protection: true,
@@ -139,6 +141,7 @@ export async function POST(req: Request): Promise<Response> {
       riskScore: d.riskScore,
       audit: d.audit,
       signalDetail: d.signalDetail,
+      ms,
     });
   } catch {
     return Response.json({ error: 'decision failed' }, { status: 502 });

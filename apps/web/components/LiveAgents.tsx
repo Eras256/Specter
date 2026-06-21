@@ -22,6 +22,7 @@ interface AgentResult {
   fintual?: { fund: string; nav: number; units: number; value: number; date: string };
   audit?: { seq: number; hash: string };
   signalDetail?: Array<{ id: string; score: number; verdict: string }>;
+  ms?: number;
 }
 
 type Phase = 'idle' | 'loading' | 'reading' | 'reveal' | 'done';
@@ -576,6 +577,7 @@ function Verdict({
           <div className="mono text-[11px] text-ink-faint">
             {t.via}: {result.via === 'api' ? 'Specter @ Fly [api]' : '—'} · {t.risk}{' '}
             {result.riskScore.toFixed(2)}
+            {result.ms != null ? ` · ⚡ ${result.ms} ms` : ''}
           </div>
           <div className="mono text-[10px] text-ink-faint">🌐 {result.scraped.sourceRef}</div>
           {result.audit && (
