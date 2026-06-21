@@ -261,3 +261,16 @@ Resend (email).
 > la API pública de Fintual) y enruta el retiro por Specter: un retiro a tu cuenta de
 > siempre se permite/retiene, pero uno secuestrado hacia una cuenta inyectada en el
 > contenido se **bloquea**. `pnpm --filter @specter/agent scenario:fintual`
+
+---
+
+## Equipo — team-37 · Platanus Hack 26 CDMX 🇲🇽
+
+Track: 🛡️ AI Security
+
+- **Diego Sevilla Díaz** — [@Oni7u7](https://github.com/Oni7u7)
+- **Giovanny Amador** — [@eras256](https://github.com/eras256)
+- **Yesica Monserrat Vargas Mendoza** — [@M0nsxx](https://github.com/M0nsxx)
+- **Edgar López Baeza** — [@ALFA117](https://github.com/ALFA117)
+
+Construido con **Claude (Anthropic)** — patrocinador del evento. ⚡
