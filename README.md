@@ -27,7 +27,7 @@ de Claude Code, un wrapper del SDK o un proxy) que conecta las acciones del agen
 ella. Una línea para instalar.
 
 - **Sitio en vivo:** https://specter-ia.vercel.app
-- **API de decisión en vivo:** https://specter-decision-api.fly.dev
+- **API de decisión en vivo:** https://specter-decision-api.fly.dev/health
 
 ---
 

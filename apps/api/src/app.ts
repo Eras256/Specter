@@ -85,6 +85,23 @@ export function createApp() {
     return c.json({ error: 'internal error' }, 500);
   });
 
+  // Friendly root so the bare domain doesn't 404 (it's an API, not a site).
+  app.get('/', (c) =>
+    c.json({
+      name: 'Specter Decision API',
+      status: 'ok',
+      moat: 'provenance — did the payee come from the user, or from content the agent ingested mid-task?',
+      web: 'https://specter-ia.vercel.app',
+      endpoints: {
+        health: 'GET /health',
+        evaluate: 'POST /v1/evaluate',
+        audit: 'GET /v1/audit',
+        verify: 'GET /v1/audit/verify',
+        hook: 'POST /hooks/claude-code',
+      },
+    }),
+  );
+
   app.get('/health', (c) => c.json({ status: 'ok', ts: Date.now() }));
 
   // ── Decision API (authenticated) ──────────────────────────────────────────
